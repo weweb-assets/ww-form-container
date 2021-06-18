@@ -9,6 +9,13 @@
         <wwLink v-show="false" ref="link" :ww-link="content.afterSubmitAction.link" />
 
         <div class="ww-form-container__relative">
+            <div
+                class="reset-icon-container"
+                @click="resetForm"
+                v-show="content.isResetOption && formState !== 'normal'"
+            >
+                <wwObject class="reset-icon" v-bind="content.resetIcon"></wwObject>
+            </div>
             <wwLayout
                 :class="{ hidden: formState === 'success' }"
                 class="ww-form-container__content -normal"
@@ -57,6 +64,7 @@ export default {
         ],
         successContent: [{ isWwObject: true, type: 'ww-text' }],
         errorContent: [{ isWwObject: true, type: 'ww-text' }],
+        resetIcon: wwLib.element('ww-icon'),
         state: 'normal',
         name: '',
         autocomplete: true,
@@ -78,6 +86,7 @@ export default {
             link: {},
             customScript: {},
         },
+        isResetOption: false,
     },
     /* wwEditor:start */
     wwEditorConfiguration({ content }) {
@@ -106,6 +115,11 @@ export default {
                 autocomplete: {
                     path: 'autocomplete',
                     label: { en: 'Autocomplete', fr: 'Autocomplétion' },
+                    type: 'OnOff',
+                },
+                isResetOption: {
+                    path: 'isResetOption',
+                    label: { en: 'Reset form icon', fr: 'Reset form icon' },
                     type: 'OnOff',
                 },
                 submitAction: {
@@ -366,6 +380,9 @@ export default {
             this.state = state;
             /* wwFront:end */
         },
+        resetForm() {
+            this.setState('normal');
+        },
         getComputedData(data) {
             switch (this.content.submitAction) {
                 case 'weweb-email':
@@ -479,6 +496,12 @@ export default {
         button[type='submit'] {
             pointer-events: none;
         }
+    }
+    .reset-icon-container {
+        position: absolute;
+        top: 0;
+        right: 0;
+        z-index: 2;
     }
     &__relative {
         position: relative;
