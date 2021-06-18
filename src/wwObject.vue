@@ -12,7 +12,8 @@
             <div
                 class="reset-icon-container"
                 @click="resetForm"
-                v-show="content.isResetOption && formState !== 'normal'"
+                v-if="content.isResetOption"
+                v-show="formState !== 'normal'"
             >
                 <wwObject class="reset-icon" v-bind="content.resetIcon"></wwObject>
             </div>
