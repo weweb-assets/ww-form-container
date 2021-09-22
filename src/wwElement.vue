@@ -401,7 +401,13 @@ export default {
                 const data = {};
 
                 // HANDLE reCAPTCHA
-                const captcha = this.$el.querySelector('.ww-recaptcha').firstChild || false;
+                let captcha;
+                let isCaptcha = false;
+                const captchaParent = this.$el.querySelector('.ww-recaptcha') || false;
+                if (captchaParent) {
+                    captcha = captchaParent.firstChild;
+                    isCaptcha = true;
+                }
                 let sendCaptcha = false;
 
                 if (captcha && captcha.getAttribute('data-send-response') === 'true') {
@@ -423,7 +429,7 @@ export default {
                                 break;
                             default:
                                 if (elem.classList.contains('g-recaptcha-response')) {
-                                    if (sendCaptcha) data[captcha.getAttribute('name')] = elem.value;
+                                    if (sendCaptcha && isCaptcha) data[captcha.getAttribute('name')] = elem.value;
                                 } else {
                                     data[elem.name] = elem.value;
                                 }
@@ -460,18 +466,6 @@ export default {
                     return { ...headersObj, [elem.key]: elem.value };
                 }, {});
 
-                console.log({
-                    method: this.content.method,
-                    url: this.content.url,
-                    data: {
-                        ...this.content.data.reduce((dataObj, elem) => {
-                            return { ...dataObj, [elem.key]: elem.value };
-                        }, {}),
-                        ...this.getComputedData(data),
-                    },
-                    headers,
-                });
-
                 // REQUEST
                 await axios({
                     method: this.content.method,
@@ -488,7 +482,7 @@ export default {
                 this.afterSubmitAction();
 
                 // CHANGE STATUS
-                this.setState('success');
+                // this.setState('success');
             } catch (err) {
                 console.log('ERROR', err);
                 // CHANGE STATUS
