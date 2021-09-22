@@ -255,12 +255,13 @@ export default {
                         wewebEmail: {},
                     });
                 case 'airtable':
+                    const airtable = this.content.airtable || {};
                     return this.$emit('update:content', {
                         method: 'post',
-                        url: '',
+                        url: `https://api.airtable.com/v0/${airtable.baseKey}/${airtable.tableName}`,
                         headers: [
                             { key: 'Content-Type', value: 'application/json' },
-                            { key: 'Authorization', value: `Bearer ${this.content.airtable.apiKey}` },
+                            { key: 'Authorization', value: `Bearer ${airtable.apiKey}` },
                         ],
                         wewebEmail: {},
                     });
@@ -391,6 +392,7 @@ export default {
                     return false;
                 }
                 /* wwEditor:end */
+
                 if (this.formState === 'success' || this.formState === 'loading') return;
 
                 this.setState('loading');
@@ -415,6 +417,9 @@ export default {
                                 break;
                             case 'date':
                                 data[elem.name] = new Date(elem.value).toUTCString();
+                                break;
+                            case 'checkbox':
+                                data[elem.name] = elem.value === 'on' ? true : false;
                                 break;
                             default:
                                 if (elem.classList.contains('g-recaptcha-response')) {
@@ -455,6 +460,18 @@ export default {
                     return { ...headersObj, [elem.key]: elem.value };
                 }, {});
 
+                console.log({
+                    method: this.content.method,
+                    url: this.content.url,
+                    data: {
+                        ...this.content.data.reduce((dataObj, elem) => {
+                            return { ...dataObj, [elem.key]: elem.value };
+                        }, {}),
+                        ...this.getComputedData(data),
+                    },
+                    headers,
+                });
+
                 // REQUEST
                 await axios({
                     method: this.content.method,
@@ -473,6 +490,7 @@ export default {
                 // CHANGE STATUS
                 this.setState('success');
             } catch (err) {
+                console.log('ERROR', err);
                 // CHANGE STATUS
                 this.setState('error');
 
