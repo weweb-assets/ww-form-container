@@ -372,6 +372,12 @@ export default {
             /* wwFront:end */
         },
         getComputedData(data) {
+            const hiddenData = this.content.data.reduce((dataObj, elem) => {
+                return { ...dataObj, [elem.key]: elem.value };
+            }, {});
+
+            data = { ...hiddenData, ...data };
+
             switch (this.content.submitAction) {
                 case 'weweb-email':
                     return {
@@ -400,14 +406,6 @@ export default {
                 // INIT DATA
                 const data = {};
 
-                // HANDLE reCAPTCHA
-                const captcha = this.$el.querySelector('.ww-recaptcha').firstChild || false;
-                let sendCaptcha = false;
-
-                if (captcha && captcha.getAttribute('data-send-response') === 'true') {
-                    sendCaptcha = true;
-                }
-
                 // ADD DATA REQUEST
                 for (const elem of form.srcElement.elements) {
                     if (elem.nodeName === 'INPUT' || elem.nodeName === 'TEXTAREA' || elem.nodeName === 'SELECT') {
@@ -422,17 +420,12 @@ export default {
                                 data[elem.name] = elem.value === 'on' ? true : false;
                                 break;
                             default:
-                                if (elem.classList.contains('g-recaptcha-response')) {
-                                    if (sendCaptcha) data[captcha.getAttribute('name')] = elem.value;
-                                } else {
-                                    data[elem.name] = elem.value;
-                                }
+                                data[elem.name] = elem.value;
 
                                 break;
                         }
                     }
 
-                    // VERIFY RECAPTCHA
                     if (
                         elem.classList.contains('g-recaptcha-response') &&
                         wwLib.getFrontWindow().grecaptcha.getResponse() === ''
@@ -460,28 +453,11 @@ export default {
                     return { ...headersObj, [elem.key]: elem.value };
                 }, {});
 
-                console.log({
-                    method: this.content.method,
-                    url: this.content.url,
-                    data: {
-                        ...this.content.data.reduce((dataObj, elem) => {
-                            return { ...dataObj, [elem.key]: elem.value };
-                        }, {}),
-                        ...this.getComputedData(data),
-                    },
-                    headers,
-                });
-
                 // REQUEST
                 await axios({
                     method: this.content.method,
                     url: this.content.url,
-                    data: {
-                        ...this.content.data.reduce((dataObj, elem) => {
-                            return { ...dataObj, [elem.key]: elem.value };
-                        }, {}),
-                        ...this.getComputedData(data),
-                    },
+                    data: this.getComputedData(data),
                     headers,
                 });
 
