@@ -482,7 +482,7 @@ export default {
                 this.afterSubmitAction();
 
                 // CHANGE STATUS
-                // this.setState('success');
+                this.setState('success');
             } catch (err) {
                 console.log('ERROR', err);
                 // CHANGE STATUS
