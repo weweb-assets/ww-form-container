@@ -372,6 +372,12 @@ export default {
             /* wwFront:end */
         },
         getComputedData(data) {
+            const hiddenData = this.content.data.reduce((dataObj, elem) => {
+                return { ...dataObj, [elem.key]: elem.value };
+            }, {});
+
+            data = { ...hiddenData, ...data };
+
             switch (this.content.submitAction) {
                 case 'weweb-email':
                     return {
@@ -418,6 +424,7 @@ export default {
                                 break;
                             default:
                                 data[elem.name] = elem.value;
+
                                 break;
                         }
                     }
@@ -449,28 +456,11 @@ export default {
                     return { ...headersObj, [elem.key]: elem.value };
                 }, {});
 
-                console.log({
-                    method: this.content.method,
-                    url: this.content.url,
-                    data: {
-                        ...this.content.data.reduce((dataObj, elem) => {
-                            return { ...dataObj, [elem.key]: elem.value };
-                        }, {}),
-                        ...this.getComputedData(data),
-                    },
-                    headers,
-                });
-
                 // REQUEST
                 await axios({
                     method: this.content.method,
                     url: this.content.url,
-                    data: {
-                        ...this.content.data.reduce((dataObj, elem) => {
-                            return { ...dataObj, [elem.key]: elem.value };
-                        }, {}),
-                        ...this.getComputedData(data),
-                    },
+                    data: this.getComputedData(data),
                     headers,
                 });
 
