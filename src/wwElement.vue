@@ -406,6 +406,20 @@ export default {
                 // INIT DATA
                 const data = {};
 
+                // HANDLE reCAPTCHA
+                let captcha;
+                let isCaptcha = false;
+                const captchaParent = this.$el.querySelector('.ww-recaptcha') || false;
+                if (captchaParent) {
+                    captcha = captchaParent.firstChild;
+                    isCaptcha = true;
+                }
+                let sendCaptcha = false;
+
+                if (captcha && captcha.getAttribute('data-send-response') === 'true') {
+                    sendCaptcha = true;
+                }
+
                 // ADD DATA REQUEST
                 for (const elem of form.srcElement.elements) {
                     if (elem.nodeName === 'INPUT' || elem.nodeName === 'TEXTAREA' || elem.nodeName === 'SELECT') {
@@ -423,8 +437,11 @@ export default {
                                 if (elem.checked) data[elem.name] = elem.value;
                                 break;
                             default:
-                                data[elem.name] = elem.value;
-
+                                if (elem.classList.contains('g-recaptcha-response')) {
+                                    if (sendCaptcha && isCaptcha) data[captcha.getAttribute('name')] = elem.value;
+                                } else {
+                                    data[elem.name] = elem.value;
+                                }
                                 break;
                         }
                     }
