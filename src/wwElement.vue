@@ -372,6 +372,12 @@ export default {
             /* wwFront:end */
         },
         getComputedData(data) {
+            const hiddenData = this.content.data.reduce((dataObj, elem) => {
+                return { ...dataObj, [elem.key]: elem.value };
+            }, {});
+
+            data = { ...hiddenData, ...data };
+
             switch (this.content.submitAction) {
                 case 'weweb-email':
                     return {
@@ -427,18 +433,19 @@ export default {
                             case 'checkbox':
                                 data[elem.name] = elem.value === 'on' ? true : false;
                                 break;
+                            case 'radio':
+                                if (elem.checked) data[elem.name] = elem.value;
+                                break;
                             default:
                                 if (elem.classList.contains('g-recaptcha-response')) {
                                     if (sendCaptcha && isCaptcha) data[captcha.getAttribute('name')] = elem.value;
                                 } else {
                                     data[elem.name] = elem.value;
                                 }
-
                                 break;
                         }
                     }
 
-                    // VERIFY RECAPTCHA
                     if (
                         elem.classList.contains('g-recaptcha-response') &&
                         wwLib.getFrontWindow().grecaptcha.getResponse() === ''
@@ -470,12 +477,7 @@ export default {
                 await axios({
                     method: this.content.method,
                     url: this.content.url,
-                    data: {
-                        ...this.content.data.reduce((dataObj, elem) => {
-                            return { ...dataObj, [elem.key]: elem.value };
-                        }, {}),
-                        ...this.getComputedData(data),
-                    },
+                    data: this.getComputedData(data),
                     headers,
                 });
 
