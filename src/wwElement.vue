@@ -1,7 +1,7 @@
 <template>
     <form
         :name="content.name"
-        :autocomplete="content.autocomplete"
+        :autocomplete="content.autocomplete ? 'on' : 'off'"
         class="ww-form-container"
         :class="[formState, { editing: isEditing, selected: isSelected }]"
         @submit.prevent="submit"
