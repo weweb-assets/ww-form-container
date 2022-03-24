@@ -196,10 +196,8 @@ export default {
             designName: wwLib.wwWebsiteData.getWebsiteName(),
             state: 'normal',
             remountKey: 0,
-            /* wwEditor:start */
             designId: wwLib.wwWebsiteData.getInfo().id,
             apiUrl: wwLib.wwApiRequests._getApiUrl(),
-            /* wwEditor:end */
         };
     },
     computed: {
@@ -234,7 +232,6 @@ export default {
                 case 'weweb-email':
                     return this.$emit('update:content', {
                         method: 'post',
-                        url: `${this.apiUrl}/design/${this.designId}/form/email`,
                         headers: [],
                         wewebEmail: {
                             recipients: [{ email: wwLib.wwEditorHelper.getUser().email }],
@@ -254,7 +251,7 @@ export default {
                         headers: [{ key: 'Content-Type', value: 'application/x-www-form-urlencoded' }],
                         wewebEmail: {},
                     });
-                case 'airtable':
+                case 'airtable': {
                     const airtable = this.content.airtable || {};
                     return this.$emit('update:content', {
                         method: 'post',
@@ -265,6 +262,7 @@ export default {
                         ],
                         wewebEmail: {},
                     });
+                }
             }
         },
         'content.afterSubmitAction.type'() {
@@ -474,9 +472,13 @@ export default {
                 }, {});
 
                 // REQUEST
+                const url =
+                    this.content.submitAction == 'weweb-email'
+                        ? `${this.apiUrl}/design/${this.designId}/form/email`
+                        : this.content.url;
                 await axios({
                     method: this.content.method,
-                    url: this.content.url,
+                    url,
                     data: this.getComputedData(data),
                     headers,
                 });
@@ -486,7 +488,6 @@ export default {
                 // CHANGE STATUS
                 this.setState('success');
             } catch (err) {
-                console.log('ERROR', err);
                 // CHANGE STATUS
                 this.setState('error');
 
