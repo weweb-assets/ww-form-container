@@ -5,6 +5,7 @@
         class="ww-form-container"
         :class="[formState, { editing: isEditing, selected: isSelected }]"
         @submit.prevent="submit"
+        data-ww-flag="form-container"
     >
         <wwLink v-show="false" ref="link" :ww-link="content.afterSubmitAction.link" />
 
