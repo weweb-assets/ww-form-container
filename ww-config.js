@@ -4,11 +4,6 @@ export default {
             fr: 'Conteneur de formulaire',
             en: 'Form Container',
         },
-        menuOptions: {
-            quick: {
-                sections: ['state'],
-            },
-        },
         icon: 'editor',
         bubble: {
             icon: 'editor',
