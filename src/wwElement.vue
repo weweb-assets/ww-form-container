@@ -440,3 +440,11 @@ export default {
     /* wwEditor:end */
 }
 </style>
+
+<style lang="scss">
+.ww-form-container__content {
+    & > .ww-object {
+        width:100%;
+    }
+}
+</style>
