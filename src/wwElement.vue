@@ -374,6 +374,7 @@ export default {
         display: flex;
         flex-direction: column;
         width: 100%;
+        align-items: stretch;
         &.-normal {
             transition: all 0.3s ease;
             transition-delay: 0.3s;
@@ -438,13 +439,5 @@ export default {
         }
     }
     /* wwEditor:end */
-}
-</style>
-
-<style lang="scss">
-.ww-form-container__content {
-    & > .ww-object {
-        width:100%;
-    }
 }
 </style>
