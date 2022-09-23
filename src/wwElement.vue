@@ -4,8 +4,8 @@
         :autocomplete="content.autocomplete ? 'on' : 'off'"
         class="ww-form-container"
         :class="[formState, { editing: isEditing, selected: isSelected }]"
-        @submit.prevent="submit"
         data-ww-flag="form-container"
+        @submit.prevent="submit"
     >
         <wwLink v-show="false" ref="link" :ww-link="content.afterSubmitAction.link" />
 
@@ -45,10 +45,8 @@ export default {
             designName: wwLib.wwWebsiteData.getWebsiteName(),
             state: 'normal',
             remountKey: 0,
-            /* wwEditor:start */
             designId: wwLib.wwWebsiteData.getInfo().id,
             apiUrl: wwLib.wwApiRequests._getApiUrl(),
-            /* wwEditor:end */
         };
     },
     computed: {
@@ -318,7 +316,10 @@ export default {
                 if (this.content.submitAction !== 'none') {
                     await axios({
                         method: this.content.method,
-                        url: this.content.url,
+                        url:
+                            this.content.submitAction === 'weweb-email'
+                                ? `${this.apiUrl}/design/${this.designId}/form/email`
+                                : this.content.url,
                         data: formData,
                         headers,
                     });
