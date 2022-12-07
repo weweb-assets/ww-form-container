@@ -8,6 +8,7 @@ export default {
         bubble: {
             icon: 'pencil',
         },
+        deprecated: 'Use a form container from the Elements panel instead of this one.',
     },
     triggerEvents: [
         { name: 'submit', label: { en: 'On submit' }, event: { formData: {} }, default: true },
