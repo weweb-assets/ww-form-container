@@ -1,4 +1,10 @@
 export default {
+    options: {
+        layout: ['flex'],
+    },
+    inherit: {
+        type: 'ww-layout',
+    },
     editor: {
         label: {
             fr: 'Conteneur de formulaire',
