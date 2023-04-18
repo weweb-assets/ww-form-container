@@ -7,9 +7,7 @@
         data-ww-flag="form-container"
         @submit.prevent="onSubmit"
     >
-        <div class="ww-form-container__relative">
-            <wwLayout class="ww-form-container__content" path="formContent" />
-        </div>
+        <wwLayout class="ww-form-container__content" path="formContent" />
     </form>
 </template>
 
@@ -52,13 +50,11 @@ export default {
 
 <style lang="scss" scoped>
 .ww-form-container {
-    &__relative {
-        position: relative;
-    }
     &__content {
         display: flex;
         flex-direction: column;
         width: 100%;
+        height: 100%;
     }
 }
 </style>
