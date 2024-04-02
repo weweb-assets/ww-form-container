@@ -7,7 +7,7 @@
         data-ww-flag="form-container"
         @submit.prevent="onSubmit"
     >
-        <wwLayout class="ww-form-container__content" path="formContent" />
+        <wwLayout class="ww-form-container__content" path="formContent" ww-responsive="wwLayout" />
     </form>
 </template>
 
