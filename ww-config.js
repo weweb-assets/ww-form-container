@@ -1,6 +1,6 @@
 export default {
     options: {
-        layout: ['flex'],
+        displayAllowedValues: ['flex', 'block', 'inline-block', 'inline-flex'],
     },
     inherit: {
         type: 'ww-layout',
@@ -16,7 +16,7 @@ export default {
         },
         workflowHint: () => {
             const currentEl = wwLib.wwUtils.getSelectedComponent();
-            if(!currentEl) {
+            if (!currentEl) {
                 return false;
             }
             const hasSubmitBtn = currentEl.querySelector('[data-ww-flag="btn-submit"]');
