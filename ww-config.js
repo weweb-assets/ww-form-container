@@ -14,7 +14,8 @@ export default {
         bubble: {
             icon: 'pencil',
         },
-        workflowHint: () => {
+        customStylePropertiesOrder: ['validation', 'debounceDelay'],
+        hint: () => {
             const currentEl = wwLib.wwUtils.getSelectedComponent();
             if (!currentEl) {
                 return false;
@@ -25,6 +26,7 @@ export default {
             }
 
             return {
+                section: 'workflows',
                 type: 'warning',
                 header: {
                     en: 'Submit button missing!',
@@ -37,8 +39,46 @@ export default {
             };
         },
     },
+    actions: [
+        {
+            label: 'Set form state',
+            action: '_setFormState',
+            args: [
+                {
+                    name: 'isSubmitting',
+                    type: 'boolean',
+                },
+                {
+                    name: 'isSubmitted',
+                    type: 'boolean',
+                },
+            ],
+        },
+    ],
     triggerEvents: [{ name: 'submit', label: { en: 'On submit' }, default: true }],
     properties: {
+        validation: {
+            label: 'Validation',
+            type: 'TextRadioGroup',
+            options: {
+                choices: [
+                    { value: 'submit', label: 'Submit' },
+                    { value: 'change', label: 'Change' },
+                ],
+            },
+            defaultValue: 'submit',
+        },
+        debounceDelay: {
+            type: 'Length',
+            label: {
+                en: 'Validation delay',
+            },
+            options: {
+                unitChoices: [{ value: 'ms', label: 'ms', min: 1, max: 5000 }],
+            },
+            defaultValue: '500ms',
+            hidden: content => content.validation !== 'change',
+        },
         formContent: {
             hidden: true,
             defaultValue: [],

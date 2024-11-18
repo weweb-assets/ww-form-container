@@ -1,10 +1,13 @@
 {
     "name": "ww-form-container",
+    "version": "4.0.0",
     "repository": {
         "type": "git",
         "url": "https://github.com/weweb-assets/ww-form-container"
     },
-    "version": "3.1.0",
+    "weweb": {
+        "componentPath": "./src/wwElement_Form.vue"
+    },
     "scripts": {
         "build": "weweb build",
         "serve": "weweb serve"
@@ -17,5 +20,8 @@
         "eslint-plugin-vue": "7.0.0-beta.4",
         "prettier": "^2.1.2"
     },
-    "license": "MIT"
+    "license": "MIT",
+    "dependencies": {
+        "@vueuse/core": "^12.5.0"
+    }
 }
