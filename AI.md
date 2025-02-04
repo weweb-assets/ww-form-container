@@ -33,3 +33,6 @@ Events:
 - submit: Triggered when form is submitted. No payload. Used to handle form submission.
 
 Variables: none
+
+Example: 
+{"uid":"form","tag":"ww-form-container","name":"Form","styles":{"default":{"display":"flex"}},"settings":{"workflows":[{...}]},"children":{"formContent":[{"uid":"child1"},{"uid":"child2"}]}}
