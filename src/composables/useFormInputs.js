@@ -20,6 +20,12 @@ export function useFormInputs({ updateInputValidity, removeInputValidity }) {
         }
     }
 
+    function updateInput(id, updateFn) {
+        const input = inputsMap.value[id];
+        if (!input) return;
+        updateFn(input);
+    }
+
     function unregisterInput(id) {
         delete inputsMap.value[id];
         removeInputValidity(id);
@@ -38,9 +44,11 @@ export function useFormInputs({ updateInputValidity, removeInputValidity }) {
 
     provide('_wwForm:registerInput', registerInput);
     provide('_wwForm:unregisterInput', unregisterInput);
+    provide('_wwForm:updateInput', updateInput);
 
     return {
         inputsMap,
         formInputs,
+        updateInput,
     };
 }

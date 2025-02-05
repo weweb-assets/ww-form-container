@@ -54,6 +54,10 @@ export default {
                 },
             ],
         },
+        {
+            label: 'Submit form',
+            action: 'submitForm',
+        },
     ],
     triggerEvents: [{ name: 'submit', label: { en: 'On submit' }, default: true }],
     properties: {

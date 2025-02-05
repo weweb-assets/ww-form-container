@@ -64,9 +64,36 @@ export default {
             updateInputValidity,
             removeInputValidity,
         });
+
+        const isValid = computed(() => formState.isValid.value);
+
+        const formData = ref({});
+        function updateFormData() {
+            for (const [key, { value }] of Object.entries(formInputs.value)) {
+                if (!_.isEqual(formData.value[key], value)) {
+                    formData.value[key] = value;
+                }
+            }
+        }
+        watchDebounced(
+            () => formInputs.value,
+            v => {
+                if (validationType.value !== 'change') return;
+                updateFormData(v);
+            },
+            {
+                deep: true,
+                debounce: () =>
+                    validationType.value === 'change' && debounceDelay.value ? parseInt(debounceDelay.value) : 0,
+            }
+        );
+
         const { handleSubmit } = useFormSubmission({
             formState: { value: formState, setFormState },
             emit,
+            isValid,
+            updateFormData,
+            validationType,
         });
 
         function _setFormState(isSubmitting, isSubmitted) {
@@ -84,7 +111,8 @@ export default {
             fields: formInputs.value,
             isSubmitting: formState.isSubmitting.value,
             isSubmitted: formState.isSubmitted.value,
-            isValid: formState.isValid.value,
+            isValid: isValid.value,
+            data: formData.value,
         }));
 
         const methods = {
@@ -106,23 +134,18 @@ export default {
                     ],
                 },
             },
+            submitForm: {
+                method: handleSubmit,
+                editor: {
+                    label: 'Submit form',
+                    elementName: 'Form',
+                    description: 'Submit the form',
+                    args: [],
+                },
+            },
         };
 
         watch(data, newData => setValue(newData), { deep: true, immediate: true });
-
-        watchDebounced(
-            () => data.value.fields,
-            (v, ov) => {
-                if (validationType.value === 'change' && !_.isEqual(v, ov)) {
-                    handleSubmit({ target: formRef.value });
-                }
-            },
-            {
-                deep: true,
-                debounce: () =>
-                    validationType.value === 'change' && debounceDelay.value ? parseInt(debounceDelay.value) : 0,
-            }
-        );
 
         provide('_wwForm:info', { uid: props.wwElementState.uid, componentId: componentId.value, name: formName });
         provide('_wwForm:useForm', useForm);
