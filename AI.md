@@ -28,6 +28,7 @@ Special Features:
 - Emits submit event on form submission
 - Workflow hint warns if submit button is missing
 - Inherits ww-layout component properties
+- Use inputs internal variables to read their values
 
 Events:
 - submit: Triggered when form is submitted. No payload. Used to handle form submission.
