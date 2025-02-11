@@ -59,20 +59,43 @@ export default {
             action: 'submitForm',
         },
     ],
-    triggerEvents: [{ name: 'submit', label: { en: 'On submit' }, default: true }],
+    triggerEvents: [
+        {
+            name: 'submit',
+            label: {
+                en: 'On submit',
+            },
+            default: true,
+        },
+        {
+            name: 'submit-validation-error',
+            label: {
+                en: 'On submit validation error',
+            },
+            default: true,
+        },
+    ],
     properties: {
         validation: {
+            section: 'settings',
             label: 'Validation',
-            type: 'TextRadioGroup',
+            type: 'TextSelect',
             options: {
-                choices: [
-                    { value: 'submit', label: 'Submit' },
-                    { value: 'change', label: 'Change' },
+                options: [
+                    { value: 'submit', label: 'On form submit' },
+                    { value: 'change', label: 'On input change' },
                 ],
             },
+            bindable: true,
             defaultValue: 'submit',
+            bindingValidation: {
+                type: 'string',
+                tooltip: 'Which event to trigger the form validation on. Either `submit` or `change`',
+                enum: ['change', 'submit'],
+            },
         },
         debounceDelay: {
+            section: 'settings',
             type: 'Length',
             label: {
                 en: 'Validation delay',
@@ -82,6 +105,12 @@ export default {
             },
             defaultValue: '500ms',
             hidden: content => content.validation !== 'change',
+            bindable: true,
+            bindingValidation: {
+                type: 'string',
+                tooltip:
+                    'The delay before triggering the form validation in milliseconds. Must be between `1` and `5000`',
+            },
         },
         formContent: {
             hidden: true,

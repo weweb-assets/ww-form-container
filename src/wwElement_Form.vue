@@ -26,7 +26,7 @@ import { selectForm } from './shared/useForm';
 import { useFormState } from './composables/useFormState';
 import { useFormSubmission } from './composables/useFormSubmission';
 import { useFormInputs } from './composables/useFormInputs';
-import { watchDebounced } from '@vueuse/core';
+import { isEqual } from 'lodash-es';
 
 export default {
     props: {
@@ -57,10 +57,15 @@ export default {
         const componentId = ref(null);
         const formName = computed(() => props.wwElementState.name);
         const validationType = computed(() => props.content.validation);
-        const debounceDelay = computed(() => wwLib.wwUtils.getLengthUnit(props.content.debounceDelay)[0] || 0);
+        const debounceDelay = computed(() => {
+            if (!props.content.debounceDelay) return 0;
+            const parsedDelay = wwLib.wwUtils.getLengthUnit(props.content.debounceDelay)[0] || 0;
+            if (parsedDelay < 1) return 0;
+            return parsedDelay;
+        });
 
         const { formState, setFormState, updateInputValidity, removeInputValidity } = useFormState();
-        const { formInputs } = useFormInputs({
+        const { formInputs, forceValidateAllFields } = useFormInputs({
             updateInputValidity,
             removeInputValidity,
         });
@@ -70,25 +75,23 @@ export default {
         const formData = ref({});
         function updateFormData() {
             for (const [key, { value }] of Object.entries(formInputs.value)) {
-                if (!_.isEqual(formData.value[key], value)) {
+                if (!isEqual(formData.value[key], value)) {
                     formData.value[key] = value;
                 }
             }
         }
-        watchDebounced(
-            () => formInputs.value,
+        watch(
+            formInputs,
             v => {
-                if (validationType.value !== 'change') return;
                 updateFormData(v);
             },
             {
                 deep: true,
-                debounce: () =>
-                    validationType.value === 'change' && debounceDelay.value ? parseInt(debounceDelay.value) : 0,
             }
         );
 
         const { handleSubmit } = useFormSubmission({
+            forceValidateAllFields,
             formState: { value: formState, setFormState },
             emit,
             isValid,
@@ -108,11 +111,11 @@ export default {
         });
 
         const data = computed(() => ({
+            formData: formData.value,
             fields: formInputs.value,
             isSubmitting: formState.isSubmitting.value,
             isSubmitted: formState.isSubmitted.value,
             isValid: isValid.value,
-            data: formData.value,
         }));
 
         const methods = {
@@ -147,7 +150,13 @@ export default {
 
         watch(data, newData => setValue(newData), { deep: true, immediate: true });
 
-        provide('_wwForm:info', { uid: props.wwElementState.uid, componentId: componentId.value, name: formName });
+        provide('_wwForm:info', {
+            uid: props.wwElementState.uid,
+            componentId: componentId.value,
+            name: formName,
+            validationType,
+            debounceDelay,
+        });
         provide('_wwForm:useForm', useForm);
         /* wwEditor:start */
         provide('_wwForm:selectForm', () => selectForm(props.wwElementState.uid, componentId.value));

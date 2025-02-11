@@ -1,15 +1,14 @@
-import { unref } from 'vue';
-
-export function useFormSubmission({ emit, isValid, updateFormData, validationType }) {
+export function useFormSubmission({ emit, forceValidateAllFields }) {
     const handleSubmit = async event => {
         try {
-            if (!unref(isValid)) return;
-            if (validationType.value === 'submit') {
-                updateFormData();
+            const isValid = forceValidateAllFields();
+            if (!isValid) {
+                emit('trigger-event', { name: 'submit-validation-error', event });
+            } else {
+                emit('trigger-event', { name: 'submit', event });
             }
-            emit('trigger-event', { name: 'submit', event });
         } catch (error) {
-            // Set form state errors
+            console.error('Form submission error', error);
         } finally {
         }
     };

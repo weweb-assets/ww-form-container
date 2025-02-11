@@ -8,7 +8,14 @@ export function useFormState() {
     const formState = shallowReactive({
         isSubmitting: computed(() => isSubmitting.value),
         isSubmitted: computed(() => isSubmitted.value),
-        isValid: computed(() => !Object.values(inputValidityMap.value).some(isValid => !isValid)),
+        isValid: computed(() => {
+            const inputsValidity = Object.values(inputValidityMap.value);
+            if (inputsValidity.some(v => v === null)) {
+                return null;
+            }
+
+            return !inputsValidity.some(isValid => !isValid);
+        }),
     });
 
     const setFormState = newState => {
@@ -17,7 +24,7 @@ export function useFormState() {
     };
 
     const updateInputValidity = (inputId, isValid) => {
-        if (typeof isValid === 'boolean') {
+        if (typeof isValid === 'boolean' || isValid === null) {
             inputValidityMap.value[inputId] = isValid;
         }
     };

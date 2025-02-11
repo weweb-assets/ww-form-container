@@ -1,4 +1,5 @@
-import { inject, computed, watch, onBeforeUnmount, ref, shallowRef } from 'vue';
+import { debounce, isEqual } from 'lodash-es';
+import { inject, computed, watch, onBeforeUnmount, shallowRef } from 'vue';
 
 function isValueEmpty(value) {
     if (value === null || value === undefined) {
@@ -54,11 +55,17 @@ export function useForm(
     const unregisterFormInput = inject('_wwForm:unregisterInput', () => {});
     const updateFormInput = inject('_wwForm:updateInput', () => {});
 
-    const { uid, name } = elementState;
-    const _fieldName = computed(() => fieldName?.value || name);
+    const { uid } = elementState;
+    const _fieldName = computed(() => fieldName?.value || elementState.name);
 
-    registerFormInput(uid, { [_fieldName.value]: { value: value.value } });
-
+    registerFormInput(uid, {
+        [_fieldName.value]: {
+            value: value.value,
+            isValid: !required.value && !customValidation.value ? true : null,
+            pending: false,
+            forceValidateField,
+        },
+    });
     const { resolveFormula } = wwLib.wwFormula.useFormula();
 
     const computeValidation = (value, required, customValidation, validation) => {
@@ -66,7 +73,7 @@ export function useForm(
 
         // If not required, field is valid unless there's custom validation
         if (!required) {
-            return customValidation && validation ? resolveFormula(validation)?.value : true;
+            return customValidation ? resolveFormula(validation)?.value : true;
         }
 
         // If required and has custom validation, both must be true
@@ -78,35 +85,71 @@ export function useForm(
         return hasValue;
     };
 
-    const isValid = computed(() => {
-        const isValid = computeValidation(value.value, required?.value, customValidation?.value, validation?.value);
-        return isValid;
-    });
+    function updateInputValidity(isValid) {
+        updateFormInput(uid, input => {
+            input[_fieldName.value].isValid = isValid;
+            input[_fieldName.value].pending = false;
+        });
+    }
+    let debouncedUpdateInputValidity = debounce(updateInputValidity, form.debounceDelay.value);
     watch(
-        isValid,
-        isValid => {
-            updateFormInput(uid, input => {
-                input[_fieldName.value].isValid = isValid;
-            });
-        },
-        {
-            immediate: true,
+        () => form.debounceDelay.value,
+        () => {
+            debouncedUpdateInputValidity.flush();
+            debouncedUpdateInputValidity = debounce(updateInputValidity, form.debounceDelay.value);
         }
     );
     watch(
+        () => computeValidation(value.value, required?.value, customValidation?.value, validation?.value),
+        isValid => {
+            if (form.validationType.value === 'change') {
+                updateFormInput(uid, input => (input[_fieldName.value].pending = true));
+                debouncedUpdateInputValidity(isValid);
+            }
+        }
+    );
+    watch(
+        () => form.validationType.value,
+        validationType => {
+            if (validationType === 'change') {
+                updateInputValidity(
+                    computeValidation(value.value, required?.value, customValidation?.value, validation?.value)
+                );
+            } else if (validationType === 'submit') {
+                updateInputValidity(true);
+            }
+        }
+    );
+    onBeforeUnmount(() => {
+        debouncedUpdateInputValidity.cancel();
+    });
+    function forceValidateField() {
+        debouncedUpdateInputValidity.cancel();
+        const isValid = computeValidation(value.value, required?.value, customValidation?.value, validation?.value);
+        updateInputValidity(isValid);
+        return isValid;
+    }
+
+    watch(
         value,
         (nv, ov) => {
-            if (!_.isEqual(nv, ov)) {
+            if (!isEqual(nv, ov)) {
                 updateFormInput(uid, input => {
                     input[_fieldName.value].value = nv;
                 });
             }
         },
         {
-            immediate: true,
             deep: true,
         }
     );
+    watch(_fieldName, (newName, oldName) => {
+        updateFormInput(uid, input => {
+            const oldValue = input[oldName];
+            delete input[oldName];
+            input[newName] = oldValue;
+        });
+    });
 
     /* wwEditor:start */
     watch(
