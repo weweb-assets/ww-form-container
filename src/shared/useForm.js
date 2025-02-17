@@ -99,15 +99,16 @@ export function useForm(
             debouncedUpdateInputValidity = debounce(updateInputValidity, form.debounceDelay.value);
         }
     );
-    watch(
-        () => computeValidation(value.value, required?.value, customValidation?.value, validation?.value),
-        isValid => {
-            if (form.validationType.value === 'change') {
-                updateFormInput(uid, input => (input[_fieldName.value].pending = true));
-                debouncedUpdateInputValidity(isValid);
-            }
+
+    const computedValidation = computed(() => {
+        return computeValidation(value.value, required?.value, customValidation?.value, validation?.value);
+    });
+    watch(computedValidation, isValid => {
+        if (form.validationType.value === 'change') {
+            updateFormInput(uid, input => (input[_fieldName.value].pending = true));
+            debouncedUpdateInputValidity(isValid);
         }
-    );
+    });
     watch(
         () => form.validationType.value,
         validationType => {

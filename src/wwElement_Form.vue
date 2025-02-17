@@ -74,6 +74,14 @@ export default {
 
         const formData = ref({});
         function updateFormData() {
+            // Remove keys that don't exist in formInputs
+            for (const key of Object.keys(formData.value)) {
+                if (!(key in formInputs.value)) {
+                    delete formData.value[key];
+                }
+            }
+
+            // Update values for existing keys
             for (const [key, { value }] of Object.entries(formInputs.value)) {
                 if (!isEqual(formData.value[key], value)) {
                     formData.value[key] = value;
