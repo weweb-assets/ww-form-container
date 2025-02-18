@@ -36,6 +36,7 @@ Variables:
 
 Note:
 For the inputs, if you want to add a validation formula, allows specify "customValidation": true in the props of the input.
+Do not disable submit button when the form is invalid. The form handle validation error on its own.
 
 Example:
 <elements>
