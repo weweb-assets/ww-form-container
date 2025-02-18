@@ -106,13 +106,8 @@ export function useForm(
 
     let isFirst = true;
     const computedValidation = computed(() => {
-        // We have to compute the validation here, otherwise the reactivity will not work
-        const isValid = computeValidation(value.value, required.value, customValidation.value, validation.value);
-        if (isFirst) {
-            isFirst = false;
-            return null;
-        }
-        return isValid;
+        console.log('computedValidation');
+        return computeValidation(value.value, required.value, customValidation.value, validation.value);
     });
     watch(computedValidation, isValid => {
         if (form.validationType.value === 'change') {
