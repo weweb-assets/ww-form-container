@@ -104,7 +104,6 @@ export function useForm(
         }
     );
 
-    let isFirst = true;
     const computedValidation = computed(() => {
         console.log('computedValidation');
         return computeValidation(value.value, required.value, customValidation.value, validation.value);
