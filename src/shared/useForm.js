@@ -62,7 +62,6 @@ export function useForm(
         [_fieldName.value]: {
             value: value.value,
             isValid: !required.value && !customValidation.value ? true : null,
-            pending: false,
             forceValidateField,
         },
     });
@@ -92,7 +91,6 @@ export function useForm(
                 return;
             }
             input[_fieldName.value].isValid = isValid;
-            input[_fieldName.value].pending = false;
         });
     }
     let debouncedUpdateInputValidity = debounce(updateInputValidity, form.debounceDelay.value);
@@ -104,24 +102,21 @@ export function useForm(
         }
     );
 
-    let isFirst = true;
     const computedValidation = computed(() => {
-        // We have to compute the validation here, otherwise the reactivity will not work
         const isValid = computeValidation(value.value, required.value, customValidation.value, validation.value);
-        if (isFirst) {
-            isFirst = false;
-            return null;
-        }
-        return isValid;
+        // We have to return everything for the watcher to be updated correctly
+        return {
+            value: value.value,
+            isValid,
+        };
     });
-    watch(computedValidation, isValid => {
+    watch(computedValidation, ({ isValid }) => {
         if (form.validationType.value === 'change') {
             updateFormInput(uid, input => {
                 if (!input[_fieldName.value]) {
                     console.warn('Field name not available, is the AI generating ?');
                     return;
                 }
-                input[_fieldName.value].pending = true;
             });
             debouncedUpdateInputValidity(isValid);
         }

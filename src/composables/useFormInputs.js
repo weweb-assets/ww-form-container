@@ -10,7 +10,9 @@ export function useFormInputs({ updateInputValidity, removeInputValidity }) {
                 .filter(input => input && typeof input === 'object')
                 .map(input => Object.entries(input)[0])
                 .filter(([key, value]) => key !== 'null' && value !== null)
-                .map(([key, value]) => [key, omit(value, ['forceValidateField', 'pending'])])
+                .map(([key, value]) => {
+                    return [key, omit(value, ['forceValidateField'])];
+                })
         );
     });
 
@@ -23,8 +25,12 @@ export function useFormInputs({ updateInputValidity, removeInputValidity }) {
     function updateInput(id, updateFn) {
         const input = inputsMap.value[id];
         if (!input) return;
+        const oldIsValid = Object.values(inputsMap.value[id])?.[0]?.isValid;
         updateFn(input);
-        updateInputValidity(id, Object.values(inputsMap.value[id])?.[0]?.isValid ?? null);
+        const newIsValid = Object.values(inputsMap.value[id])?.[0]?.isValid;
+        if (oldIsValid !== newIsValid) {
+            updateInputValidity(id, Object.values(inputsMap.value[id])?.[0]?.isValid ?? null);
+        }
     }
 
     function unregisterInput(id) {
