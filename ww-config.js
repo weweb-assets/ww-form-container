@@ -58,6 +58,17 @@ export default {
             label: 'Submit form',
             action: 'submitForm',
         },
+        {
+            label: 'Reset form',
+            action: 'resetForm',
+            args: [
+                {
+                    name: 'initialValues',
+                    type: 'object',
+                    required: false,
+                },
+            ],
+        },
     ],
     triggerEvents: [
         {
