@@ -47,7 +47,13 @@ function isValueEmpty(value) {
  */
 export function useForm(
     value,
-    { fieldName, validation, customValidation = shallowRef(false), required = shallowRef(false), initialValue = undefined },
+    {
+        fieldName,
+        validation,
+        customValidation = shallowRef(false),
+        required = shallowRef(false),
+        initialValue = undefined,
+    },
     { elementState, emit, sidepanelFormPath = 'form' }
 ) {
     const form = inject('_wwForm:info', null);
@@ -70,16 +76,25 @@ export function useForm(
     const { resolveFormula } = wwLib.wwFormula.useFormula();
 
     const computeValidation = (value, required, customValidation, validation) => {
+        const validationResult = customValidation && validation ? resolveFormula(validation)?.value : true;
         const hasValue = !isValueEmpty(value);
+        console.log('computeValidation', {
+            value,
+            required,
+            customValidation,
+            validation,
+            validationResult,
+            hasValue,
+        });
 
         // If not required, field is valid unless there's custom validation
         if (!required) {
-            return customValidation ? resolveFormula(validation)?.value : true;
+            return customValidation ? validationResult : true;
         }
 
         // If required and has custom validation, both must be true
         if (customValidation && validation) {
-            return hasValue && resolveFormula(validation)?.value;
+            return hasValue && validationResult;
         }
 
         // If just required, check for value
