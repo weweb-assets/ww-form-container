@@ -47,7 +47,7 @@ function isValueEmpty(value) {
  */
 export function useForm(
     value,
-    { fieldName, validation, customValidation = shallowRef(false), required = shallowRef(false) },
+    { fieldName, validation, customValidation = shallowRef(false), required = shallowRef(false), initialValue = undefined },
     { elementState, emit, sidepanelFormPath = 'form' }
 ) {
     const form = inject('_wwForm:info', null);
@@ -64,6 +64,7 @@ export function useForm(
             isValid: !required.value && !customValidation.value ? true : null,
             pending: false,
             forceValidateField,
+            initialValue, // Store the initialValue so it can be used during form reset
         },
     });
     const { resolveFormula } = wwLib.wwFormula.useFormula();
