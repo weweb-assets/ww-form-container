@@ -1,5 +1,5 @@
 import { debounce, isEqual } from 'lodash-es';
-import { inject, computed, watch, onBeforeUnmount, shallowRef } from 'vue';
+import { inject, computed, watch, onBeforeUnmount, shallowRef, unref, isRef } from 'vue';
 
 function isValueEmpty(value) {
     if (value === null || value === undefined) {
@@ -47,8 +47,14 @@ function isValueEmpty(value) {
  */
 export function useForm(
     value,
-    { fieldName, validation, customValidation = shallowRef(false), required = shallowRef(false) },
-    { elementState, emit, sidepanelFormPath = 'form' }
+    {
+        fieldName,
+        validation,
+        customValidation = shallowRef(false),
+        required = shallowRef(false),
+        initialValue = undefined,
+    },
+    { elementState, emit, sidepanelFormPath = 'form', setValue = null }
 ) {
     const form = inject('_wwForm:info', null);
     const registerFormInput = inject('_wwForm:registerInput', () => {});
@@ -58,27 +64,49 @@ export function useForm(
     const { uid } = elementState;
     const _fieldName = computed(() => fieldName?.value || elementState.name);
 
+    function updateValue(newValue) {
+        if (setValue) {
+            setValue(newValue);
+        } else {
+            value.value = newValue;
+        }
+    }
+
     registerFormInput(uid, {
         [_fieldName.value]: {
             value: value.value,
             isValid: !required.value && !customValidation.value ? true : null,
             pending: false,
             forceValidateField,
+            updateValue,
+            initialValue: unref(initialValue), // Store the initialValue so it can be used during form reset
         },
     });
+
+    // Watch initialValue if it's a ref and update the form input
+    if (isRef(initialValue)) {
+        watch(initialValue, newInitialValue => {
+            updateFormInput(uid, input => {
+                if (input[_fieldName.value]) {
+                    input[_fieldName.value].initialValue = newInitialValue;
+                }
+            });
+        });
+    }
     const { resolveFormula } = wwLib.wwFormula.useFormula();
 
     const computeValidation = (value, required, customValidation, validation) => {
+        const validationResult = customValidation && validation ? resolveFormula(validation)?.value : true;
         const hasValue = !isValueEmpty(value);
 
         // If not required, field is valid unless there's custom validation
         if (!required) {
-            return customValidation ? resolveFormula(validation)?.value : true;
+            return validationResult;
         }
 
         // If required and has custom validation, both must be true
         if (customValidation && validation) {
-            return hasValue && resolveFormula(validation)?.value;
+            return hasValue && validationResult;
         }
 
         // If just required, check for value

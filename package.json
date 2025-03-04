@@ -5,9 +5,6 @@
         "type": "git",
         "url": "https://github.com/weweb-assets/ww-form-container"
     },
-    "weweb": {
-        "componentPath": "./src/wwElement_Form.vue"
-    },
     "scripts": {
         "build": "weweb build",
         "serve": "weweb serve"

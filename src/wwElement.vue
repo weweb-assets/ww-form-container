@@ -65,7 +65,7 @@ export default {
         });
 
         const { formState, setFormState, updateInputValidity, removeInputValidity } = useFormState();
-        const { formInputs, forceValidateAllFields } = useFormInputs({
+        const { formInputs, forceValidateAllFields, resetInputs } = useFormInputs({
             updateInputValidity,
             removeInputValidity,
         });
@@ -109,6 +109,12 @@ export default {
 
         function _setFormState(isSubmitting, isSubmitted) {
             setFormState({ isSubmitting: !!isSubmitting, isSubmitted: !!isSubmitted });
+        }
+        
+        function resetForm(initialValues = {}) {
+            resetInputs(initialValues);
+            setFormState({ isSubmitting: false, isSubmitted: false });
+            updateFormData();
         }
 
         const { setValue } = wwLib.wwVariable.useComponentVariable({
@@ -154,6 +160,22 @@ export default {
                     args: [],
                 },
             },
+            resetForm: {
+                method: resetForm,
+                editor: {
+                    label: 'Reset form',
+                    elementName: 'Form',
+                    description: 'Reset the form fields to their initial values',
+                    args: [
+                        {
+                            name: 'initialValues',
+                            type: 'object',
+                            description: 'Optional object with initial values for specific fields',
+                            required: false,
+                        },
+                    ],
+                },
+            },
         };
 
         watch(data, newData => setValue(newData), { deep: true, immediate: true });
@@ -192,6 +214,7 @@ Object containing all form inputs. Each input contains:
             handleSubmit,
             formState,
             _setFormState,
+            resetForm,
         };
     },
 };
