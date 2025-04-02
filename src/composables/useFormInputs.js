@@ -63,6 +63,7 @@ export function useFormInputs({ updateInputValidity, removeInputValidity }) {
     }
 
     function resetInputs(initialValues = {}) {
+        initialValues ||= {};
         for (const [id, inputs] of Object.entries(inputsMap.value)) {
             for (const [name, input] of Object.entries(inputs)) {
                 if (input && typeof input === 'object') {
