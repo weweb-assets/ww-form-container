@@ -344,16 +344,20 @@ export default {
             switch (this.content.afterSubmitAction.type) {
                 case 'link':
                     return this.$refs.link.$el.click();
-                case 'custom-script':
-                    return eval(this.content.afterSubmitAction.customScript.code);
+                case 'custom-script': {
+                    const scriptFunction = new Function(this.content.afterSubmitAction.customScript.code);
+                    return scriptFunction();
+                }
             }
         },
         async afterErrorAction() {
             switch (this.content.afterErrorAction.type) {
                 case 'link':
                     return this.$refs.link.$el.click();
-                case 'custom-script':
-                    return eval(this.content.afterErrorAction.customScript.code);
+                case 'custom-script': {
+                    const scriptFunction = new Function(this.content.afterErrorAction.customScript.code);
+                    return scriptFunction();
+                }
             }
         },
     },
