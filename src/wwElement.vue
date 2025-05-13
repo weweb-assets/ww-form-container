@@ -195,28 +195,13 @@ export default {
         });
         provide('_wwForm:useForm', useForm);
         
-        // Re-provide context after a delay to handle popup refresh case
-        function reProvideFormContextAfterDelay() {
-            setTimeout(() => {
-                console.log('[FORM PROVIDER] Re-providing context after delay');
-                // Re-provide the context
-                provide('_wwForm:info', {
-                    uid: props.wwElementState.uid,
-                    componentId: componentId.value,
-                    name: formName,
-                    validationType,
-                    debounceDelay,
-                });
-                
-                // Also emit the sidepanel content update again
-                emit('update:sidepanel-content', {
-                    path: 'form',
-                    value: { uid: props.wwElementState.uid, name: formName.value },
-                });
-            }, 1000); // Wait for popup to be fully in DOM
-        }
-        
-        reProvideFormContextAfterDelay();
+        // Just adding debug logs without changing functionality
+        console.log('[FORM PROVIDER]', 'All form context data', {
+            uid: props.wwElementState.uid,
+            componentId: componentId.value,
+            name: formName?.value,
+            validationType: validationType?.value
+        });
         /* wwEditor:start */
         provide('_wwForm:selectForm', () => selectForm(props.wwElementState.uid, componentId.value));
         /* wwEditor:end */
