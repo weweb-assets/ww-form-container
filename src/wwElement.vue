@@ -187,6 +187,11 @@ export default {
             validationType,
             debounceDelay,
         });
+        console.log('[FORM PROVIDER]', 'Form context provided', {
+            uid: props.wwElementState.uid, 
+            elementName: props.wwElementState?.name,
+            timestamp: Date.now()
+        });
         provide('_wwForm:useForm', useForm);
         /* wwEditor:start */
         provide('_wwForm:selectForm', () => selectForm(props.wwElementState.uid, componentId.value));
