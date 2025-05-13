@@ -194,6 +194,29 @@ export default {
             inPopup: document.querySelector(`[data-ww-element-id="${props.wwElementState.uid}"]`)?.closest('.ww-popup')
         });
         provide('_wwForm:useForm', useForm);
+        
+        // Re-provide context after a delay to handle popup refresh case
+        function reProvideFormContextAfterDelay() {
+            setTimeout(() => {
+                console.log('[FORM PROVIDER] Re-providing context after delay');
+                // Re-provide the context
+                provide('_wwForm:info', {
+                    uid: props.wwElementState.uid,
+                    componentId: componentId.value,
+                    name: formName,
+                    validationType,
+                    debounceDelay,
+                });
+                
+                // Also emit the sidepanel content update again
+                emit('update:sidepanel-content', {
+                    path: 'form',
+                    value: { uid: props.wwElementState.uid, name: formName.value },
+                });
+            }, 1000); // Wait for popup to be fully in DOM
+        }
+        
+        reProvideFormContextAfterDelay();
         /* wwEditor:start */
         provide('_wwForm:selectForm', () => selectForm(props.wwElementState.uid, componentId.value));
         /* wwEditor:end */
