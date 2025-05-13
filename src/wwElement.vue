@@ -190,7 +190,8 @@ export default {
         console.log('[FORM PROVIDER]', 'Form context provided', {
             uid: props.wwElementState.uid, 
             elementName: props.wwElementState?.name,
-            timestamp: Date.now()
+            timestamp: Date.now(),
+            inPopup: document.querySelector(`[data-ww-element-id="${props.wwElementState.uid}"]`)?.closest('.ww-popup')
         });
         provide('_wwForm:useForm', useForm);
         /* wwEditor:start */
