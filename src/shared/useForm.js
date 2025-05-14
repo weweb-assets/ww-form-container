@@ -204,6 +204,7 @@ export function useForm(
             emit('update:sidepanel-content', {
                 path: sidepanelFormPath,
                 value: { uid: form?.uid, name: form?.name?.value },
+                forced: true,
             });
         },
         { immediate: true, deep: true }
