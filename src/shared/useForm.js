@@ -60,6 +60,7 @@ export function useForm(
     const registerFormInput = inject('_wwForm:registerInput', () => {});
     const unregisterFormInput = inject('_wwForm:unregisterInput', () => {});
     const updateFormInput = inject('_wwForm:updateInput', () => {});
+    const submitForm = inject('_wwForm:submit', () => {});
 
     const { uid } = elementState;
     const _fieldName = computed(() => fieldName?.value || elementState.name);
@@ -216,6 +217,7 @@ export function useForm(
 
     return {
         selectForm,
+        submitForm,
     };
 }
 
