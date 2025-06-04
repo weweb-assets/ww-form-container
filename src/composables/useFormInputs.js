@@ -52,14 +52,34 @@ export function useFormInputs({ updateInputValidity, removeInputValidity }) {
 
     function forceValidateAllFields() {
         const validityMap = {};
+        const invalidFields = [];
+        
         for (const [id, inputs] of Object.entries(inputsMap.value)) {
             for (const [name, input] of Object.entries(inputs)) {
                 if ('forceValidateField' in input) {
-                    validityMap[id + name] = input.forceValidateField();
+                    const isValid = input.forceValidateField();
+                    validityMap[id + name] = isValid;
+                    
+                    if (!isValid) {
+                        invalidFields.push({
+                            id: id,
+                            name: name,
+                            value: input.value,
+                            isValid: isValid,
+                            error: input.error || input.validationMessage || 'Validation failed'
+                        });
+                    }
                 }
             }
         }
-        return Object.values(validityMap).every(Boolean);
+        
+        const isValid = Object.values(validityMap).every(Boolean);
+        
+        return {
+            isValid,
+            invalidFields,
+            validityMap
+        };
     }
 
     function resetInputs(initialValues = {}) {
