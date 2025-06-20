@@ -15,7 +15,7 @@ function isValueEmpty(value) {
     }
 
     if (typeof value === 'boolean') {
-        return false;
+        return value === false;
     }
 
     if (Array.isArray(value)) {
