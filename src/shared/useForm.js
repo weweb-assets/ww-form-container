@@ -52,6 +52,7 @@ export function useForm(
         validation,
         customValidation = shallowRef(false),
         required = shallowRef(false),
+        requiredValidation = null,
         initialValue = undefined,
     },
     { elementState, emit, sidepanelFormPath = 'form', setValue = null }
@@ -96,9 +97,11 @@ export function useForm(
     }
     const { resolveFormula } = wwLib.wwFormula.useFormula();
 
-    const computeValidation = (value, required, customValidation, validation) => {
+    const computeValidation = (value, required, customValidation, validation, requiredValidation) => {
         const validationResult = customValidation && validation ? resolveFormula(validation)?.value : true;
-        const hasValue = !isValueEmpty(value);
+        
+        // Use custom required validation if provided, otherwise use default isEmpty check
+        const hasValue = requiredValidation ? requiredValidation(value) : !isValueEmpty(value);
 
         // If not required, field is valid unless there's custom validation
         if (!required) {
@@ -110,7 +113,7 @@ export function useForm(
             return hasValue && validationResult;
         }
 
-        // If just required, check for value
+        // If just required, check for value using custom or default validation
         return hasValue;
     };
 
@@ -136,7 +139,7 @@ export function useForm(
     let isFirst = true;
     const computedValidation = computed(() => {
         // We have to compute the validation here, otherwise the reactivity will not work
-        const isValid = computeValidation(value.value, required.value, customValidation.value, validation.value);
+        const isValid = computeValidation(value.value, required.value, customValidation.value, validation.value, requiredValidation);
         if (isFirst) {
             isFirst = false;
             return null;
@@ -160,7 +163,7 @@ export function useForm(
         validationType => {
             if (validationType === 'change') {
                 updateInputValidity(
-                    computeValidation(value.value, required?.value, customValidation?.value, validation?.value)
+                    computeValidation(value.value, required?.value, customValidation?.value, validation?.value, requiredValidation)
                 );
             } else if (validationType === 'submit') {
                 updateInputValidity(true);
@@ -172,7 +175,7 @@ export function useForm(
     });
     function forceValidateField() {
         debouncedUpdateInputValidity.cancel();
-        const isValid = computeValidation(value.value, required?.value, customValidation?.value, validation?.value);
+        const isValid = computeValidation(value.value, required?.value, customValidation?.value, validation?.value, requiredValidation);
         updateInputValidity(isValid);
         return isValid;
     }
