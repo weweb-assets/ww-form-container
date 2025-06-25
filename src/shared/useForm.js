@@ -74,6 +74,13 @@ export function useForm(
         }
     }
 
+    console.log('[useForm] Registering input:', {
+        uid,
+        fieldName: _fieldName.value,
+        elementId,
+        hasElementId: !!elementId
+    });
+    
     registerFormInput(uid, {
         [_fieldName.value]: {
             value: value.value,
