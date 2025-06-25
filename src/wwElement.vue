@@ -74,16 +74,10 @@ export default {
 
         // Compute inputs list for sidepanel with field names and element IDs
         const sidepanelInputs = computed(() => {
-            console.log('[ww-form-container] Computing sidepanelInputs');
-            console.log('[ww-form-container] Current inputsMap:', JSON.stringify(inputsMap.value, null, 2));
-            
             const inputs = [];
             for (const [uid, inputData] of Object.entries(inputsMap.value)) {
-                console.log(`[ww-form-container] Processing input ${uid}:`, inputData);
                 if (inputData && typeof inputData === 'object') {
                     for (const [fieldName, fieldData] of Object.entries(inputData)) {
-                        console.log(`[ww-form-container] Field ${fieldName}:`, fieldData);
-                        console.log(`[ww-form-container] Has elementId:`, fieldData?.elementId);
                         if (fieldData && fieldData.elementId) {
                             inputs.push({
                                 label: fieldName,
@@ -93,7 +87,6 @@ export default {
                     }
                 }
             }
-            console.log('[ww-form-container] Computed inputs:', inputs);
             return inputs;
         });
 
@@ -222,22 +215,6 @@ export default {
         // Update sidepanel content with form inputs when they change
         /* wwEditor:start */
         watch(sidepanelInputs, (inputs) => {
-            console.log('[ww-form-container] sidepanelInputs changed:', inputs);
-            console.log('[ww-form-container] inputsMap:', inputsMap.value);
-            console.log('[ww-form-container] Emitting sidepanel update with inputs:', JSON.stringify(inputs, null, 2));
-            
-            // Try emitting with content. prefix like other components
-            emit('update:sidepanel-content', {
-                path: 'content.form',
-                value: { 
-                    uid: props.wwElementState.uid,
-                    name: formName.value,
-                    inputs: inputs
-                },
-                forced: true,
-            });
-            
-            // Also emit without content. prefix for backwards compatibility
             emit('update:sidepanel-content', {
                 path: 'form',
                 value: { 

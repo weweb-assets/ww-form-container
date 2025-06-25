@@ -74,13 +74,6 @@ export function useForm(
         }
     }
 
-    console.log('[useForm] Registering input:', {
-        uid,
-        fieldName: _fieldName.value,
-        elementId,
-        hasElementId: !!elementId
-    });
-    
     registerFormInput(uid, {
         [_fieldName.value]: {
             value: value.value,
@@ -211,7 +204,6 @@ export function useForm(
     watch(
         () => form,
         () => {
-            console.log('[useForm] Updating sidepanel, form inputs:', form?.inputs?.value);
             emit('update:sidepanel-content', {
                 path: sidepanelFormPath,
                 value: { 
@@ -230,7 +222,6 @@ export function useForm(
         watch(
             () => form.inputs.value,
             (inputs) => {
-                console.log('[useForm] Form inputs changed:', inputs);
                 emit('update:sidepanel-content', {
                     path: sidepanelFormPath,
                     value: { 
