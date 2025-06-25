@@ -211,6 +211,7 @@ export default {
             name: formName,
             validationType,
             debounceDelay,
+            inputs: sidepanelInputs,
         });
         provide('_wwForm:submit', handleSubmit);
         provide('_wwForm:useForm', useForm);
@@ -224,6 +225,19 @@ export default {
             console.log('[ww-form-container] sidepanelInputs changed:', inputs);
             console.log('[ww-form-container] inputsMap:', inputsMap.value);
             console.log('[ww-form-container] Emitting sidepanel update with inputs:', JSON.stringify(inputs, null, 2));
+            
+            // Try emitting with content. prefix like other components
+            emit('update:sidepanel-content', {
+                path: 'content.form',
+                value: { 
+                    uid: props.wwElementState.uid,
+                    name: formName.value,
+                    inputs: inputs
+                },
+                forced: true,
+            });
+            
+            // Also emit without content. prefix for backwards compatibility
             emit('update:sidepanel-content', {
                 path: 'form',
                 value: { 
@@ -248,6 +262,30 @@ Object containing all form inputs. Each input contains:
         /* Useful for the form to be identified by the childrens and make them have the right behaviors (tooltips, show/hide props, etc...) */
         onMounted(() => {
             componentId.value = formRef?.value?.getAttribute('data-ww-component-id');
+            
+            /* wwEditor:start */
+            // Ensure form info is immediately available in sidepanel
+            const inputs = sidepanelInputs.value;
+            console.log('[ww-form-container] onMounted - emitting initial sidepanel content');
+            emit('update:sidepanel-content', {
+                path: 'content.form',
+                value: { 
+                    uid: props.wwElementState.uid,
+                    name: formName.value,
+                    inputs: inputs
+                },
+                forced: true,
+            });
+            emit('update:sidepanel-content', {
+                path: 'form',
+                value: { 
+                    uid: props.wwElementState.uid,
+                    name: formName.value,
+                    inputs: inputs
+                },
+                forced: true,
+            });
+            /* wwEditor:end */
         });
 
         return {

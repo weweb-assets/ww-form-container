@@ -211,14 +211,39 @@ export function useForm(
     watch(
         () => form,
         () => {
+            console.log('[useForm] Updating sidepanel, form inputs:', form?.inputs?.value);
             emit('update:sidepanel-content', {
                 path: sidepanelFormPath,
-                value: { uid: form?.uid, name: form?.name?.value },
+                value: { 
+                    uid: form?.uid, 
+                    name: form?.name?.value,
+                    inputs: form?.inputs?.value || []
+                },
                 forced: true,
             });
         },
         { immediate: true, deep: true }
     );
+    
+    // Also watch inputs changes
+    if (form?.inputs) {
+        watch(
+            () => form.inputs.value,
+            (inputs) => {
+                console.log('[useForm] Form inputs changed:', inputs);
+                emit('update:sidepanel-content', {
+                    path: sidepanelFormPath,
+                    value: { 
+                        uid: form?.uid, 
+                        name: form?.name?.value,
+                        inputs: inputs || []
+                    },
+                    forced: true,
+                });
+            },
+            { deep: true }
+        );
+    }
     /* wwEditor:end */
 
     onBeforeUnmount(() => {
