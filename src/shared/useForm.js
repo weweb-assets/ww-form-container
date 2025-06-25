@@ -53,6 +53,7 @@ export function useForm(
         customValidation = shallowRef(false),
         required = shallowRef(false),
         initialValue = undefined,
+        elementId = null,
     },
     { elementState, emit, sidepanelFormPath = 'form', setValue = null }
 ) {
@@ -81,6 +82,7 @@ export function useForm(
             forceValidateField,
             updateValue,
             initialValue: unref(initialValue), // Store the initialValue so it can be used during form reset
+            elementId: elementId, // Store the element's ID for label association
         },
     });
 

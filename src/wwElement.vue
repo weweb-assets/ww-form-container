@@ -36,7 +36,7 @@ export default {
         wwEditorState: { type: Object, required: true },
         /* wwEditor:end */
     },
-    emits: ['trigger-event'],
+    emits: ['trigger-event', 'update:sidepanel-content'],
     setup(props, { emit }) {
         const isEditing = computed(() => {
             /* wwEditor:start */
@@ -65,12 +65,30 @@ export default {
         });
 
         const { formState, setFormState, updateInputValidity, removeInputValidity } = useFormState();
-        const { formInputs, forceValidateAllFields, resetInputs } = useFormInputs({
+        const { formInputs, inputsMap, forceValidateAllFields, resetInputs } = useFormInputs({
             updateInputValidity,
             removeInputValidity,
         });
 
         const isValid = computed(() => formState.isValid.value);
+
+        // Compute inputs list for sidepanel with field names and element IDs
+        const sidepanelInputs = computed(() => {
+            const inputs = [];
+            for (const [uid, inputData] of Object.entries(inputsMap.value)) {
+                if (inputData && typeof inputData === 'object') {
+                    for (const [fieldName, fieldData] of Object.entries(inputData)) {
+                        if (fieldData && fieldData.elementId) {
+                            inputs.push({
+                                label: fieldName,
+                                value: fieldData.elementId
+                            });
+                        }
+                    }
+                }
+            }
+            return inputs;
+        });
 
         const formData = ref({});
         function updateFormData() {
@@ -191,6 +209,21 @@ export default {
         provide('_wwForm:useForm', useForm);
         /* wwEditor:start */
         provide('_wwForm:selectForm', () => selectForm(props.wwElementState.uid, componentId.value));
+        /* wwEditor:end */
+
+        // Update sidepanel content with form inputs when they change
+        /* wwEditor:start */
+        watch(sidepanelInputs, (inputs) => {
+            emit('update:sidepanel-content', {
+                path: 'form',
+                value: { 
+                    uid: props.wwElementState.uid,
+                    name: formName.value,
+                    inputs: inputs
+                },
+                forced: true,
+            });
+        }, { deep: true, immediate: true });
         /* wwEditor:end */
 
         const markdown = `### Form local informations
