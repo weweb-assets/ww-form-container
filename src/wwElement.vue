@@ -243,7 +243,6 @@ Object containing all form inputs. Each input contains:
             /* wwEditor:start */
             // Ensure form info is immediately available in sidepanel
             const inputs = sidepanelInputs.value;
-            console.log('[ww-form-container] onMounted - emitting initial sidepanel content');
             emit('update:sidepanel-content', {
                 path: 'content.form',
                 value: { 
