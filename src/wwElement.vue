@@ -72,7 +72,6 @@ export default {
 
         const isValid = computed(() => formState.isValid.value);
 
-        // Compute inputs list for sidepanel with field names and element IDs
         const sidepanelInputs = computed(() => {
             const inputs = [];
             for (const [uid, inputData] of Object.entries(inputsMap.value)) {
@@ -81,7 +80,8 @@ export default {
                         if (fieldData && fieldData.elementId) {
                             inputs.push({
                                 label: fieldName,
-                                value: fieldData.elementId
+                                name: fieldName,
+                                id: fieldData.elementId
                             });
                         }
                     }
