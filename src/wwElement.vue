@@ -81,7 +81,8 @@ export default {
                             inputs.push({
                                 label: fieldName,
                                 name: fieldName,
-                                id: fieldData.elementId
+                                id: fieldData.elementId,
+                                componentUid: uid  // Include component UID
                             });
                         }
                     }
