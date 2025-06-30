@@ -199,14 +199,23 @@ export default {
 
         watch(data, newData => setValue(newData), { deep: true, immediate: true });
 
-        provide('_wwForm:info', {
+        const formInfo = {
             uid: props.wwElementState.uid,
             componentId: componentId.value,
             name: formName,
             validationType,
             debounceDelay,
             inputs: sidepanelInputs,
+        };
+        
+        console.log('[ww-form-container] Debug - Providing form info:', {
+            uid: formInfo.uid,
+            componentId: formInfo.componentId,
+            name: formInfo.name.value,
+            inputs: formInfo.inputs.value,
         });
+        
+        provide('_wwForm:info', formInfo);
         provide('_wwForm:submit', handleSubmit);
         provide('_wwForm:useForm', useForm);
         /* wwEditor:start */
@@ -216,6 +225,10 @@ export default {
         // Update sidepanel content with form inputs when they change
         /* wwEditor:start */
         watch(sidepanelInputs, (inputs) => {
+            console.log('[ww-form-container] Debug - sidepanelInputs changed:', {
+                inputs,
+                inputsCount: inputs.length,
+            });
             emit('update:sidepanel-content', {
                 path: 'form',
                 value: { 
@@ -240,6 +253,11 @@ Object containing all form inputs. Each input contains:
         /* Useful for the form to be identified by the childrens and make them have the right behaviors (tooltips, show/hide props, etc...) */
         onMounted(() => {
             componentId.value = formRef?.value?.getAttribute('data-ww-component-id');
+            console.log('[ww-form-container] Debug - onMounted:', {
+                componentId: componentId.value,
+                formName: formName.value,
+                uid: props.wwElementState.uid,
+            });
             
             /* wwEditor:start */
             // Ensure form info is immediately available in sidepanel
