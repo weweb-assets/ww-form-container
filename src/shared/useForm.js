@@ -61,7 +61,7 @@ export function useForm(
     const unregisterFormInput = inject('_wwForm:unregisterInput', () => {});
     const updateFormInput = inject('_wwForm:updateInput', () => {});
 
-    const { uid } = elementState;
+    const id = wwLib.wwUtils.getUid();
     const _fieldName = computed(() => fieldName?.value || elementState.name);
 
     function updateValue(newValue) {
@@ -72,7 +72,7 @@ export function useForm(
         }
     }
 
-    registerFormInput(uid, {
+    registerFormInput(id, {
         [_fieldName.value]: {
             value: value.value,
             isValid: !required.value && !customValidation.value ? true : null,
@@ -86,7 +86,7 @@ export function useForm(
     // Watch initialValue if it's a ref and update the form input
     if (isRef(initialValue)) {
         watch(initialValue, newInitialValue => {
-            updateFormInput(uid, input => {
+            updateFormInput(id, input => {
                 if (input[_fieldName.value]) {
                     input[_fieldName.value].initialValue = newInitialValue;
                 }
@@ -114,7 +114,7 @@ export function useForm(
     };
 
     function updateInputValidity(isValid) {
-        updateFormInput(uid, input => {
+        updateFormInput(id, input => {
             if (!input[_fieldName.value]) {
                 console.warn('Field name not available, is the AI generating ?');
                 return;
@@ -144,7 +144,7 @@ export function useForm(
     });
     watch(computedValidation, isValid => {
         if (form.validationType.value === 'change') {
-            updateFormInput(uid, input => {
+            updateFormInput(id, input => {
                 if (!input[_fieldName.value]) {
                     console.warn('Field name not available, is the AI generating ?');
                     return;
@@ -180,7 +180,7 @@ export function useForm(
         value,
         (nv, ov) => {
             if (!isEqual(nv, ov)) {
-                updateFormInput(uid, input => {
+                updateFormInput(id, input => {
                     input[_fieldName.value].value = nv;
                 });
             }
@@ -190,7 +190,7 @@ export function useForm(
         }
     );
     watch(_fieldName, (newName, oldName) => {
-        updateFormInput(uid, input => {
+        updateFormInput(id, input => {
             const oldValue = input[oldName];
             delete input[oldName];
             input[newName] = oldValue;
@@ -212,7 +212,7 @@ export function useForm(
     /* wwEditor:end */
 
     onBeforeUnmount(() => {
-        unregisterFormInput(uid);
+        unregisterFormInput(id);
     });
 
     return {
