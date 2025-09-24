@@ -189,6 +189,7 @@ export default {
             validationType,
             debounceDelay,
         });
+        provide('_wwForm:submit', handleSubmit);
         provide('_wwForm:useForm', useForm);
         /* wwEditor:start */
         provide('_wwForm:selectForm', () => selectForm(props.wwElementState.uid, componentId.value));
