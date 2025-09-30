@@ -10,38 +10,27 @@ export function useFormState() {
         isSubmitted: computed(() => isSubmitted.value),
         isValid: computed(() => {
             const inputsValidity = Object.values(inputValidityMap.value);
-
-            // If no inputs, return null
             if (inputsValidity.length === 0) {
                 return null;
             }
 
-            // Check if any input has null validity (unvalidated)
             const hasNullValidity = inputsValidity.some(v => v === null);
 
-            // SPECIAL FIX: If all inputs are null but we have inputs, assume they are valid
-            // This prevents the stuck null issue after reset
             if (hasNullValidity && inputsValidity.every(v => v === null)) {
-                return true; // Assume valid to prevent stuck null
+                return true;
             }
 
             if (hasNullValidity) {
                 return null;
             }
 
-            // Check if any input is invalid
-            const hasInvalidInputs = inputsValidity.some(isValid => !isValid);
-            return !hasInvalidInputs;
+            return !inputsValidity.some(isValid => !isValid);
         }),
     });
 
     const setFormState = newState => {
-        if ('isSubmitting' in newState) {
-            isSubmitting.value = newState.isSubmitting;
-        }
-        if ('isSubmitted' in newState) {
-            isSubmitted.value = newState.isSubmitted;
-        }
+        if ('isSubmitting' in newState) isSubmitting.value = newState.isSubmitting;
+        if ('isSubmitted' in newState) isSubmitted.value = newState.isSubmitted;
     };
 
     const updateInputValidity = (inputId, isValid) => {

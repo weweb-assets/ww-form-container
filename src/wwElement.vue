@@ -135,19 +135,6 @@ export default {
             resetInputs(initialValues);
             setFormState({ isSubmitting: false, isSubmitted: false });
             updateFormData();
-
-            // Force validation to prevent stuck null issue
-            forceValidateAllFields();
-
-            // Delayed validation trigger to ensure proper state
-            setTimeout(() => {
-                if (formState.isValid.value === null) {
-                    // Force all inputs to valid state if still null
-                    for (const [id, inputs] of Object.entries(formInputs.value)) {
-                        updateInputValidity(id, true);
-                    }
-                }
-            }, 10);
         }
 
         const { setValue } = wwLib.wwVariable.useComponentVariable({

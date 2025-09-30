@@ -81,8 +81,6 @@ export function useForm(
             pending: false,
             forceValidateField,
             updateValue,
-            setResettingFlag,
-            resetValidationState,
             initialValue: unref(initialValue), // Store the initialValue so it can be used during form reset
         },
     });
@@ -143,15 +141,7 @@ export function useForm(
     );
 
     let isFirst = true;
-    let isResetting = false; // Flag to prevent validation during reset
-
     const computedValidation = computed(() => {
-        // Skip validation during reset to prevent interference
-        if (isResetting) {
-            return null;
-        }
-
-        // We have to compute the validation here, otherwise the reactivity will not work
         const isValid = computeValidation(
             value.value,
             required.value,
@@ -159,12 +149,10 @@ export function useForm(
             validation.value,
             requiredValidation
         );
-
         if (isFirst) {
             isFirst = false;
             return null;
         }
-
         return isValid;
     });
     watch(computedValidation, (isValid, oldIsValid) => {
@@ -212,20 +200,6 @@ export function useForm(
         return isValid;
     }
 
-    // Expose reset flag for external control
-    function setResettingFlag(flag) {
-        isResetting = flag;
-    }
-
-    // Reset the isFirst flag to allow proper validation after reset
-    function resetValidationState() {
-        isFirst = true;
-        isResetting = false; // Also clear the resetting flag
-
-        // Force a re-computation by triggering the computed validation
-        const currentValidation = computedValidation.value;
-    }
-
     watch(
         value,
         (nv, ov) => {
@@ -268,8 +242,6 @@ export function useForm(
     return {
         selectForm,
         submitForm,
-        setResettingFlag,
-        resetValidationState,
     };
 }
 

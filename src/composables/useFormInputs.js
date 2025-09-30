@@ -84,42 +84,20 @@ export function useFormInputs({ updateInputValidity, removeInputValidity }) {
 
     function resetInputs(initialValues = {}) {
         initialValues ||= {};
-        const resetDetails = [];
 
-        // STEP 1: Set reset flag to prevent validation interference
-        for (const [id, inputs] of Object.entries(inputsMap.value)) {
-            for (const [name, input] of Object.entries(inputs)) {
-                if (input && typeof input === 'object' && input[name] && input[name].setResettingFlag) {
-                    input[name].setResettingFlag(true);
-                }
-            }
-        }
-
-        // STEP 2: Clear all input validity states
-        const inputIds = Object.keys(inputsMap.value);
-        for (const id of inputIds) {
-            removeInputValidity(id);
-        }
-
-        // STEP 3: Reset all input values and validation states
         for (const [id, inputs] of Object.entries(inputsMap.value)) {
             for (const [name, input] of Object.entries(inputs)) {
                 if (input && typeof input === 'object') {
                     updateInput(id, input => {
                         if (input[name]) {
-                            const oldValue = input[name].value;
-
-                            // Priority order for values:
-                            // 1. Value from passed initialValues object
-                            // 2. Field's stored initialValue from useForm
-                            // 3. Default empty value based on type
-
+                            // Determine reset value
                             let newValue;
                             if (initialValues[name] !== undefined) {
                                 newValue = initialValues[name];
                             } else if (input[name].initialValue !== undefined) {
                                 newValue = input[name].initialValue;
                             } else {
+                                // Default empty value based on type
                                 if (Array.isArray(input[name].value)) {
                                     newValue = [];
                                 } else if (typeof input[name].value === 'object' && input[name].value !== null) {
@@ -133,71 +111,17 @@ export function useFormInputs({ updateInputValidity, removeInputValidity }) {
                                 }
                             }
 
-                            // Update both the form input's value and the component's reactive value reference
+                            // Update value
                             input[name].value = newValue;
                             if (input[name].updateValue) {
                                 input[name].updateValue(newValue);
                             }
 
-                            // Reset validation state to null (unvalidated)
+                            // Reset validation state
                             input[name].isValid = null;
                             input[name].pending = false;
-
-                            resetDetails.push({
-                                id,
-                                name,
-                                oldValue,
-                                newValue,
-                            });
                         }
                     });
-                }
-            }
-        }
-
-        // STEP 4: Ensure all inputs are registered with null validity (unvalidated state)
-        for (const [id, inputs] of Object.entries(inputsMap.value)) {
-            for (const [name, input] of Object.entries(inputs)) {
-                if (input && typeof input === 'object' && input[name]) {
-                    updateInputValidity(id, null);
-                }
-            }
-        }
-
-        // STEP 5: Clear reset flag to re-enable validation
-        for (const [id, inputs] of Object.entries(inputsMap.value)) {
-            for (const [name, input] of Object.entries(inputs)) {
-                if (input && typeof input === 'object' && input[name] && input[name].setResettingFlag) {
-                    input[name].setResettingFlag(false);
-                }
-            }
-        }
-
-        // STEP 6: Reset validation state for all fields
-        for (const [id, inputs] of Object.entries(inputsMap.value)) {
-            for (const [name, input] of Object.entries(inputs)) {
-                if (input && typeof input === 'object' && input[name] && input[name].resetValidationState) {
-                    input[name].resetValidationState();
-                }
-            }
-        }
-
-        // STEP 7: Force validation of all fields to compute proper validation state
-        for (const [id, inputs] of Object.entries(inputsMap.value)) {
-            for (const [name, input] of Object.entries(inputs)) {
-                if (input && typeof input === 'object' && input[name] && input[name].forceValidateField) {
-                    input[name].forceValidateField();
-                }
-            }
-        }
-
-        // STEP 8: Force trigger all validation watchers by updating input values slightly
-        for (const [id, inputs] of Object.entries(inputsMap.value)) {
-            for (const [name, input] of Object.entries(inputs)) {
-                if (input && typeof input === 'object' && input[name] && input[name].updateValue) {
-                    // Force a small update to trigger validation watchers
-                    const currentValue = input[name].value;
-                    input[name].updateValue(currentValue);
                 }
             }
         }
