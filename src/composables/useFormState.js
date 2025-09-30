@@ -10,11 +10,35 @@ export function useFormState() {
         isSubmitted: computed(() => isSubmitted.value),
         isValid: computed(() => {
             const inputsValidity = Object.values(inputValidityMap.value);
-            if (inputsValidity.some(v => v === null)) {
+            console.log('🔍 [isValid] Computing form validity...');
+            console.log('🔍 [isValid] inputValidityMap:', JSON.parse(JSON.stringify(inputValidityMap.value)));
+            console.log('🔍 [isValid] inputsValidity array:', inputsValidity);
+
+            // Check if any input has null validity (unvalidated)
+            const hasNullValidity = inputsValidity.some(v => v === null);
+            console.log('🔍 [isValid] Has null validity inputs:', hasNullValidity);
+
+            if (hasNullValidity) {
+                console.log('🔍 [isValid] Returning null (some inputs unvalidated)');
                 return null;
             }
 
-            return !inputsValidity.some(isValid => !isValid);
+            // Check if any input is invalid
+            const hasInvalidInputs = inputsValidity.some(isValid => !isValid);
+            const finalResult = !hasInvalidInputs;
+
+            console.log('🔍 [isValid] Has invalid inputs:', hasInvalidInputs);
+            console.log('🔍 [isValid] Final result:', finalResult);
+            console.log(
+                '🔍 [isValid] Validation breakdown:',
+                inputsValidity.map((valid, index) => ({
+                    inputIndex: index,
+                    isValid: valid,
+                    status: valid === null ? 'unvalidated' : valid ? 'valid' : 'invalid',
+                }))
+            );
+
+            return finalResult;
         }),
     });
 

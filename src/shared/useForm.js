@@ -99,41 +99,92 @@ export function useForm(
     const { resolveFormula } = wwLib.wwFormula.useFormula();
 
     const computeValidation = (value, required, customValidation, validation, requiredValidation) => {
+        console.log('🔍 [computeValidation] Computing validation for field:', _fieldName.value);
+        console.log('🔍 [computeValidation] Input parameters:', {
+            value,
+            required,
+            customValidation,
+            validation: validation?.value,
+            requiredValidation: !!requiredValidation,
+        });
+
         const validationResult = customValidation && validation ? resolveFormula(validation)?.value : true;
+        console.log('🔍 [computeValidation] Custom validation result:', validationResult);
 
         // Use custom required validation if provided, otherwise use default isEmpty check
         const hasValue = requiredValidation ? requiredValidation(value) : !isValueEmpty(value);
+        console.log('🔍 [computeValidation] Has value check:', hasValue);
+
+        let finalResult;
 
         // If not required, field is valid unless there's custom validation
         if (!required) {
-            return validationResult;
+            finalResult = validationResult;
+            console.log('🔍 [computeValidation] Field not required, using validation result:', finalResult);
         }
-
         // If required and has custom validation, both must be true
-        if (customValidation && validation) {
-            return hasValue && validationResult;
+        else if (customValidation && validation) {
+            finalResult = hasValue && validationResult;
+            console.log(
+                '🔍 [computeValidation] Required with custom validation:',
+                finalResult,
+                '(hasValue:',
+                hasValue,
+                '&& validationResult:',
+                validationResult,
+                ')'
+            );
+        }
+        // If just required, check for value using custom or default validation
+        else {
+            finalResult = hasValue;
+            console.log('🔍 [computeValidation] Required field, using hasValue:', finalResult);
         }
 
-        // If just required, check for value using custom or default validation
-        return hasValue;
+        console.log('🔍 [computeValidation] Final validation result for field', _fieldName.value, ':', finalResult);
+        return finalResult;
     };
 
     function updateInputValidity(isValid) {
+        console.log('🔍 [updateInputValidity] Updating input validity for field:', _fieldName.value, 'to:', isValid);
         updateFormInput(id, input => {
             if (!input[_fieldName.value]) {
                 console.warn('Field name not available, is the AI generating ?');
                 return;
             }
+            console.log(
+                '🔍 [updateInputValidity] Setting isValid to:',
+                isValid,
+                'and pending to false for field:',
+                _fieldName.value
+            );
             input[_fieldName.value].isValid = isValid;
             input[_fieldName.value].pending = false;
         });
+        console.log('🔍 [updateInputValidity] Input validity update completed for field:', _fieldName.value);
     }
-    let debouncedUpdateInputValidity = debounce(updateInputValidity, form.debounceDelay.value);
+    let debouncedUpdateInputValidity = debounce(isValid => {
+        console.log(
+            '🔍 [debouncedUpdateInputValidity] Debounced function called for field:',
+            _fieldName.value,
+            'with value:',
+            isValid
+        );
+        updateInputValidity(isValid);
+    }, form.debounceDelay.value);
     watch(
         () => form.debounceDelay.value,
         () => {
             debouncedUpdateInputValidity.flush();
-            debouncedUpdateInputValidity = debounce(updateInputValidity, form.debounceDelay.value);
+            debouncedUpdateInputValidity = debounce(isValid => {
+                console.log(
+                    '🔍 [debouncedUpdateInputValidity] Debounced function called for field:',
+                    _fieldName.value,
+                    'with value:',
+                    isValid
+                );
+                updateInputValidity(isValid);
+            }, form.debounceDelay.value);
         }
     );
 
@@ -161,33 +212,50 @@ export function useForm(
         }
         return isValid;
     });
-    watch(computedValidation, isValid => {
+    watch(computedValidation, (isValid, oldIsValid) => {
+        console.log('🔍 [computedValidation watcher] Validation changed for field:', _fieldName.value);
+        console.log('🔍 [computedValidation watcher] Old validation:', oldIsValid, 'New validation:', isValid);
+        console.log('🔍 [computedValidation watcher] Form validation type:', form.validationType.value);
+        console.log('🔍 [computedValidation watcher] Is resetting flag:', isResetting);
+
         if (form.validationType.value === 'change') {
+            console.log('🔍 [computedValidation watcher] Validation type is "change", updating input');
             updateFormInput(id, input => {
                 if (!input[_fieldName.value]) {
                     console.warn('Field name not available, is the AI generating ?');
                     return;
                 }
+                console.log('🔍 [computedValidation watcher] Setting pending to true for field:', _fieldName.value);
                 input[_fieldName.value].pending = true;
             });
+            console.log('🔍 [computedValidation watcher] Calling debouncedUpdateInputValidity with:', isValid);
             debouncedUpdateInputValidity(isValid);
+        } else {
+            console.log('🔍 [computedValidation watcher] Validation type is not "change", skipping update');
         }
     });
     watch(
         () => form.validationType.value,
-        validationType => {
+        (validationType, oldValidationType) => {
+            console.log('🔍 [validationType watcher] Validation type changed for field:', _fieldName.value);
+            console.log('🔍 [validationType watcher] Old type:', oldValidationType, 'New type:', validationType);
+
             if (validationType === 'change') {
-                updateInputValidity(
-                    computeValidation(
-                        value.value,
-                        required?.value,
-                        customValidation?.value,
-                        validation?.value,
-                        requiredValidation
-                    )
+                console.log('🔍 [validationType watcher] Validation type is "change", computing validation');
+                const computedResult = computeValidation(
+                    value.value,
+                    required?.value,
+                    customValidation?.value,
+                    validation?.value,
+                    requiredValidation
                 );
+                console.log('🔍 [validationType watcher] Computed validation result:', computedResult);
+                updateInputValidity(computedResult);
             } else if (validationType === 'submit') {
+                console.log('🔍 [validationType watcher] Validation type is "submit", setting to true');
                 updateInputValidity(true);
+            } else {
+                console.log('🔍 [validationType watcher] Unknown validation type:', validationType);
             }
         }
     );
@@ -217,10 +285,18 @@ export function useForm(
     watch(
         value,
         (nv, ov) => {
+            console.log('🔍 [value watcher] Value changed for field:', _fieldName.value);
+            console.log('🔍 [value watcher] Old value:', ov, 'New value:', nv);
+            console.log('🔍 [value watcher] Values are equal:', isEqual(nv, ov));
+
             if (!isEqual(nv, ov)) {
+                console.log('🔍 [value watcher] Values are different, updating form input');
                 updateFormInput(id, input => {
+                    console.log('🔍 [value watcher] Updating value from', input[_fieldName.value].value, 'to', nv);
                     input[_fieldName.value].value = nv;
                 });
+            } else {
+                console.log('🔍 [value watcher] Values are equal, skipping update');
             }
         },
         {

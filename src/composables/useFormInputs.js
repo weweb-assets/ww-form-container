@@ -18,16 +18,37 @@ export function useFormInputs({ updateInputValidity, removeInputValidity }) {
     });
 
     function registerInput(id, input) {
+        console.log('🔍 [registerInput] Registering new input with id:', id);
+        console.log('🔍 [registerInput] Input data:', JSON.parse(JSON.stringify(input)));
+
         inputsMap.value[id] = input;
         const [, value] = Object.entries(input)[0];
+
+        console.log('🔍 [registerInput] Input value object:', JSON.parse(JSON.stringify(value)));
+        console.log('🔍 [registerInput] Initial isValid value:', value.isValid);
+        console.log('🔍 [registerInput] Using validation state:', value.isValid ?? null);
+
         updateInputValidity(id, value.isValid ?? null);
+        console.log('🔍 [registerInput] Input registration completed for id:', id);
     }
 
     function updateInput(id, updateFn) {
+        console.log('🔍 [updateInput] Updating input with id:', id);
         const input = inputsMap.value[id];
-        if (!input) return;
+        if (!input) {
+            console.log('🔍 [updateInput] Input not found for id:', id);
+            return;
+        }
+
+        console.log('🔍 [updateInput] Input before update:', JSON.parse(JSON.stringify(input)));
         updateFn(input);
-        updateInputValidity(id, Object.values(inputsMap.value[id])?.[0]?.isValid ?? null);
+        console.log('🔍 [updateInput] Input after update:', JSON.parse(JSON.stringify(input)));
+
+        const newValidationState = Object.values(inputsMap.value[id])?.[0]?.isValid ?? null;
+        console.log('🔍 [updateInput] New validation state for id', id, ':', newValidationState);
+
+        updateInputValidity(id, newValidationState);
+        console.log('🔍 [updateInput] Input update completed for id:', id);
     }
 
     function unregisterInput(id) {
@@ -37,10 +58,26 @@ export function useFormInputs({ updateInputValidity, removeInputValidity }) {
 
     watch(
         inputsMap,
-        () => {
+        (newInputsMap, oldInputsMap) => {
+            console.log('🔍 [inputsMap watcher] inputsMap changed');
+            console.log('🔍 [inputsMap watcher] New inputsMap:', JSON.parse(JSON.stringify(newInputsMap)));
+            console.log('🔍 [inputsMap watcher] Old inputsMap:', JSON.parse(JSON.stringify(oldInputsMap)));
+
             for (const [id, input] of Object.entries(inputsMap.value)) {
                 const [, value] = Object.entries(input)[0];
-                if ('isValid' in value) updateInputValidity(id, value.isValid);
+                console.log(
+                    '🔍 [inputsMap watcher] Processing input id:',
+                    id,
+                    'value:',
+                    JSON.parse(JSON.stringify(value))
+                );
+
+                if ('isValid' in value) {
+                    console.log('🔍 [inputsMap watcher] Updating validity for id:', id, 'to:', value.isValid);
+                    updateInputValidity(id, value.isValid);
+                } else {
+                    console.log('🔍 [inputsMap watcher] No isValid property found for id:', id);
+                }
             }
         },
         { deep: true, immediate: true }
