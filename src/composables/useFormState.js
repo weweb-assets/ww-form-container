@@ -11,7 +11,11 @@ export function useFormState() {
         isValid: computed(() => {
             const inputsValidity = Object.values(inputValidityMap.value);
             console.log('🔍 [isValid] Computing form validity...');
-            console.log('🔍 [isValid] inputValidityMap:', JSON.parse(JSON.stringify(inputValidityMap.value)));
+            try {
+                console.log('🔍 [isValid] inputValidityMap:', JSON.parse(JSON.stringify(inputValidityMap.value)));
+            } catch (e) {
+                console.log('🔍 [isValid] inputValidityMap (raw):', inputValidityMap.value);
+            }
             console.log('🔍 [isValid] inputsValidity array:', inputsValidity);
 
             // If no inputs, return null
@@ -79,17 +83,31 @@ export function useFormState() {
 
     const updateInputValidity = (inputId, isValid) => {
         console.log('🔄 [updateInputValidity] Updating input validity for id:', inputId, 'to:', isValid);
-        console.log(
-            '🔄 [updateInputValidity] Current inputValidityMap before update:',
-            JSON.parse(JSON.stringify(inputValidityMap.value))
-        );
+        try {
+            console.log(
+                '🔄 [updateInputValidity] Current inputValidityMap before update:',
+                JSON.parse(JSON.stringify(inputValidityMap.value))
+            );
+        } catch (e) {
+            console.log(
+                '🔄 [updateInputValidity] Current inputValidityMap before update (raw):',
+                inputValidityMap.value
+            );
+        }
 
         if (typeof isValid === 'boolean' || isValid === null) {
             inputValidityMap.value[inputId] = isValid;
-            console.log(
-                '🔄 [updateInputValidity] Updated inputValidityMap after update:',
-                JSON.parse(JSON.stringify(inputValidityMap.value))
-            );
+            try {
+                console.log(
+                    '🔄 [updateInputValidity] Updated inputValidityMap after update:',
+                    JSON.parse(JSON.stringify(inputValidityMap.value))
+                );
+            } catch (e) {
+                console.log(
+                    '🔄 [updateInputValidity] Updated inputValidityMap after update (raw):',
+                    inputValidityMap.value
+                );
+            }
             console.log('🔄 [updateInputValidity] New form isValid value:', formState.isValid.value);
         } else {
             console.log('🔄 [updateInputValidity] Invalid isValid value type:', typeof isValid, 'value:', isValid);
@@ -98,25 +116,40 @@ export function useFormState() {
 
     const removeInputValidity = inputId => {
         console.log('🔄 [removeInputValidity] Removing input validity for id:', inputId);
-        console.log(
-            '🔄 [removeInputValidity] Current inputValidityMap before removal:',
-            JSON.parse(JSON.stringify(inputValidityMap.value))
-        );
+        try {
+            console.log(
+                '🔄 [removeInputValidity] Current inputValidityMap before removal:',
+                JSON.parse(JSON.stringify(inputValidityMap.value))
+            );
+        } catch (e) {
+            console.log(
+                '🔄 [removeInputValidity] Current inputValidityMap before removal (raw):',
+                inputValidityMap.value
+            );
+        }
         delete inputValidityMap.value[inputId];
-        console.log(
-            '🔄 [removeInputValidity] inputValidityMap after removal:',
-            JSON.parse(JSON.stringify(inputValidityMap.value))
-        );
+        try {
+            console.log(
+                '🔄 [removeInputValidity] inputValidityMap after removal:',
+                JSON.parse(JSON.stringify(inputValidityMap.value))
+            );
+        } catch (e) {
+            console.log('🔄 [removeInputValidity] inputValidityMap after removal (raw):', inputValidityMap.value);
+        }
         console.log('🔄 [removeInputValidity] New form isValid value:', formState.isValid.value);
     };
 
     // Force trigger validation computation
     const triggerValidationComputation = () => {
         console.log('🔄 [triggerValidationComputation] Forcing validation computation...');
-        console.log(
-            '🔄 [triggerValidationComputation] Current inputValidityMap:',
-            JSON.parse(JSON.stringify(inputValidityMap.value))
-        );
+        try {
+            console.log(
+                '🔄 [triggerValidationComputation] Current inputValidityMap:',
+                JSON.parse(JSON.stringify(inputValidityMap.value))
+            );
+        } catch (e) {
+            console.log('🔄 [triggerValidationComputation] Current inputValidityMap (raw):', inputValidityMap.value);
+        }
         console.log('🔄 [triggerValidationComputation] Current isValid value:', formState.isValid.value);
 
         // Force the computed to re-evaluate by accessing it

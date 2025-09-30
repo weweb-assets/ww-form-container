@@ -19,12 +19,21 @@ export function useFormInputs({ updateInputValidity, removeInputValidity }) {
 
     function registerInput(id, input) {
         console.log('🔍 [registerInput] Registering new input with id:', id);
-        console.log('🔍 [registerInput] Input data:', JSON.parse(JSON.stringify(input)));
+        try {
+            console.log('🔍 [registerInput] Input data:', JSON.parse(JSON.stringify(input)));
+        } catch (e) {
+            console.log('🔍 [registerInput] Input data (raw):', input);
+        }
 
         inputsMap.value[id] = input;
         const [, value] = Object.entries(input)[0];
 
-        console.log('🔍 [registerInput] Input value object:', JSON.parse(JSON.stringify(value)));
+        try {
+            console.log('🔍 [registerInput] Input value object:', JSON.parse(JSON.stringify(value)));
+        } catch (e) {
+            console.log('🔍 [registerInput] Input value object (raw):', value);
+        }
+
         console.log('🔍 [registerInput] Initial isValid value:', value.isValid);
         console.log('🔍 [registerInput] Using validation state:', value.isValid ?? null);
 
@@ -40,9 +49,19 @@ export function useFormInputs({ updateInputValidity, removeInputValidity }) {
             return;
         }
 
-        console.log('🔍 [updateInput] Input before update:', JSON.parse(JSON.stringify(input)));
+        try {
+            console.log('🔍 [updateInput] Input before update:', JSON.parse(JSON.stringify(input)));
+        } catch (e) {
+            console.log('🔍 [updateInput] Input before update (raw):', input);
+        }
+
         updateFn(input);
-        console.log('🔍 [updateInput] Input after update:', JSON.parse(JSON.stringify(input)));
+
+        try {
+            console.log('🔍 [updateInput] Input after update:', JSON.parse(JSON.stringify(input)));
+        } catch (e) {
+            console.log('🔍 [updateInput] Input after update (raw):', input);
+        }
 
         const newValidationState = Object.values(inputsMap.value[id])?.[0]?.isValid ?? null;
         console.log('🔍 [updateInput] New validation state for id', id, ':', newValidationState);
@@ -60,17 +79,29 @@ export function useFormInputs({ updateInputValidity, removeInputValidity }) {
         inputsMap,
         (newInputsMap, oldInputsMap) => {
             console.log('🔍 [inputsMap watcher] inputsMap changed');
-            console.log('🔍 [inputsMap watcher] New inputsMap:', JSON.parse(JSON.stringify(newInputsMap)));
-            console.log('🔍 [inputsMap watcher] Old inputsMap:', JSON.parse(JSON.stringify(oldInputsMap)));
+            try {
+                console.log('🔍 [inputsMap watcher] New inputsMap:', JSON.parse(JSON.stringify(newInputsMap)));
+            } catch (e) {
+                console.log('🔍 [inputsMap watcher] New inputsMap (raw):', newInputsMap);
+            }
+            try {
+                console.log('🔍 [inputsMap watcher] Old inputsMap:', JSON.parse(JSON.stringify(oldInputsMap)));
+            } catch (e) {
+                console.log('🔍 [inputsMap watcher] Old inputsMap (raw):', oldInputsMap);
+            }
 
             for (const [id, input] of Object.entries(inputsMap.value)) {
                 const [, value] = Object.entries(input)[0];
-                console.log(
-                    '🔍 [inputsMap watcher] Processing input id:',
-                    id,
-                    'value:',
-                    JSON.parse(JSON.stringify(value))
-                );
+                try {
+                    console.log(
+                        '🔍 [inputsMap watcher] Processing input id:',
+                        id,
+                        'value:',
+                        JSON.parse(JSON.stringify(value))
+                    );
+                } catch (e) {
+                    console.log('🔍 [inputsMap watcher] Processing input id:', id, 'value (raw):', value);
+                }
 
                 if ('isValid' in value) {
                     console.log('🔍 [inputsMap watcher] Updating validity for id:', id, 'to:', value.isValid);
@@ -121,7 +152,14 @@ export function useFormInputs({ updateInputValidity, removeInputValidity }) {
 
     function resetInputs(initialValues = {}) {
         console.log('🔄 [resetInputs] Starting resetInputs with initialValues:', initialValues);
-        console.log('🔄 [resetInputs] Current inputsMap before reset:', JSON.parse(JSON.stringify(inputsMap.value)));
+        try {
+            console.log(
+                '🔄 [resetInputs] Current inputsMap before reset:',
+                JSON.parse(JSON.stringify(inputsMap.value))
+            );
+        } catch (e) {
+            console.log('🔄 [resetInputs] Current inputsMap before reset (raw):', inputsMap.value);
+        }
 
         initialValues ||= {};
         const resetDetails = [];
@@ -259,19 +297,31 @@ export function useFormInputs({ updateInputValidity, removeInputValidity }) {
 
         // STEP 6: Reset validation state for all fields
         console.log('🔄 [resetInputs] STEP 6: Resetting validation state for all fields');
-        console.log(
-            '🔄 [resetInputs] Current inputsMap for validation reset:',
-            JSON.parse(JSON.stringify(inputsMap.value))
-        );
+        try {
+            console.log(
+                '🔄 [resetInputs] Current inputsMap for validation reset:',
+                JSON.parse(JSON.stringify(inputsMap.value))
+            );
+        } catch (e) {
+            console.log('🔄 [resetInputs] Current inputsMap for validation reset (raw):', inputsMap.value);
+        }
 
         for (const [id, inputs] of Object.entries(inputsMap.value)) {
             console.log('🔄 [resetInputs] Processing input id for validation reset:', id);
             for (const [name, input] of Object.entries(inputs)) {
                 console.log('🔄 [resetInputs] Processing field for validation reset:', name);
-                console.log('🔄 [resetInputs] Input object:', JSON.parse(JSON.stringify(input)));
+                try {
+                    console.log('🔄 [resetInputs] Input object:', JSON.parse(JSON.stringify(input)));
+                } catch (e) {
+                    console.log('🔄 [resetInputs] Input object (raw):', input);
+                }
 
                 if (input && typeof input === 'object' && input[name]) {
-                    console.log('🔄 [resetInputs] Field object:', JSON.parse(JSON.stringify(input[name])));
+                    try {
+                        console.log('🔄 [resetInputs] Field object:', JSON.parse(JSON.stringify(input[name])));
+                    } catch (e) {
+                        console.log('🔄 [resetInputs] Field object (raw):', input[name]);
+                    }
                     console.log(
                         '🔄 [resetInputs] Has resetValidationState function:',
                         !!input[name].resetValidationState
@@ -308,7 +358,11 @@ export function useFormInputs({ updateInputValidity, removeInputValidity }) {
         }
 
         console.log('🔄 [resetInputs] Reset details:', resetDetails);
-        console.log('🔄 [resetInputs] Final inputsMap after reset:', JSON.parse(JSON.stringify(inputsMap.value)));
+        try {
+            console.log('🔄 [resetInputs] Final inputsMap after reset:', JSON.parse(JSON.stringify(inputsMap.value)));
+        } catch (e) {
+            console.log('🔄 [resetInputs] Final inputsMap after reset (raw):', inputsMap.value);
+        }
         console.log('🔄 [resetInputs] resetInputs completed successfully');
     }
 
