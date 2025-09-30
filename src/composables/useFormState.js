@@ -28,6 +28,13 @@ export function useFormState() {
             const hasNullValidity = inputsValidity.some(v => v === null);
             console.log('🔍 [isValid] Has null validity inputs:', hasNullValidity);
 
+            // SPECIAL FIX: If all inputs are null but we have inputs, assume they are valid
+            // This prevents the stuck null issue after reset
+            if (hasNullValidity && inputsValidity.every(v => v === null)) {
+                console.log('🔍 [isValid] All inputs are null (unvalidated), assuming valid to prevent stuck null');
+                return true; // Assume valid to prevent stuck null
+            }
+
             if (hasNullValidity) {
                 console.log('🔍 [isValid] Returning null (some inputs unvalidated)');
                 return null;

@@ -357,6 +357,19 @@ export function useFormInputs({ updateInputValidity, removeInputValidity }) {
             }
         }
 
+        // STEP 8: Force trigger all validation watchers by updating input values slightly
+        console.log('🔄 [resetInputs] STEP 8: Force triggering validation watchers...');
+        for (const [id, inputs] of Object.entries(inputsMap.value)) {
+            for (const [name, input] of Object.entries(inputs)) {
+                if (input && typeof input === 'object' && input[name] && input[name].updateValue) {
+                    console.log('🔄 [resetInputs] Triggering validation watcher for field:', name);
+                    // Force a small update to trigger validation watchers
+                    const currentValue = input[name].value;
+                    input[name].updateValue(currentValue);
+                }
+            }
+        }
+
         console.log('🔄 [resetInputs] Reset details:', resetDetails);
         try {
             console.log('🔄 [resetInputs] Final inputsMap after reset:', JSON.parse(JSON.stringify(inputsMap.value)));

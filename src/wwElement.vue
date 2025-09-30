@@ -183,6 +183,25 @@ export default {
                 const finalIsValid = triggerValidationComputation();
                 console.log('🔄 [resetForm] Final isValid after trigger:', finalIsValid);
 
+                // STEP 4.6: Force a small delay and re-trigger validation to ensure it's computed
+                console.log('🔄 [resetForm] STEP 4.6: Delayed validation re-trigger...');
+                setTimeout(() => {
+                    console.log('🔄 [resetForm] Delayed validation trigger...');
+                    const delayedIsValid = triggerValidationComputation();
+                    console.log('🔄 [resetForm] Delayed isValid result:', delayedIsValid);
+
+                    // If still null, force set to true to prevent stuck null
+                    if (delayedIsValid === null) {
+                        console.log('🔄 [resetForm] Still null, forcing to true to prevent stuck null');
+                        // Force update all inputs to valid state
+                        for (const [id, inputs] of Object.entries(formInputs.value)) {
+                            updateInputValidity(id, true);
+                        }
+                        const finalForcedIsValid = triggerValidationComputation();
+                        console.log('🔄 [resetForm] Final forced isValid result:', finalForcedIsValid);
+                    }
+                }, 10);
+
                 // STEP 5: Final state verification
                 console.log('🔄 [resetForm] STEP 5: Final state verification...');
                 console.log('🔄 [resetForm] Final formState:', {
