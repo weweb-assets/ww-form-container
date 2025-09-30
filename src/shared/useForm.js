@@ -81,6 +81,7 @@ export function useForm(
             pending: false,
             forceValidateField,
             updateValue,
+            setResettingFlag,
             initialValue: unref(initialValue), // Store the initialValue so it can be used during form reset
         },
     });
@@ -99,7 +100,7 @@ export function useForm(
 
     const computeValidation = (value, required, customValidation, validation, requiredValidation) => {
         const validationResult = customValidation && validation ? resolveFormula(validation)?.value : true;
-        
+
         // Use custom required validation if provided, otherwise use default isEmpty check
         const hasValue = requiredValidation ? requiredValidation(value) : !isValueEmpty(value);
 
@@ -137,9 +138,23 @@ export function useForm(
     );
 
     let isFirst = true;
+    let isResetting = false; // Flag to prevent validation during reset
+
     const computedValidation = computed(() => {
+        // Skip validation during reset to prevent interference
+        if (isResetting) {
+            console.log('🔄 [useForm] Skipping validation during reset for field:', _fieldName.value);
+            return null;
+        }
+
         // We have to compute the validation here, otherwise the reactivity will not work
-        const isValid = computeValidation(value.value, required.value, customValidation.value, validation.value, requiredValidation);
+        const isValid = computeValidation(
+            value.value,
+            required.value,
+            customValidation.value,
+            validation.value,
+            requiredValidation
+        );
         if (isFirst) {
             isFirst = false;
             return null;
@@ -163,7 +178,13 @@ export function useForm(
         validationType => {
             if (validationType === 'change') {
                 updateInputValidity(
-                    computeValidation(value.value, required?.value, customValidation?.value, validation?.value, requiredValidation)
+                    computeValidation(
+                        value.value,
+                        required?.value,
+                        customValidation?.value,
+                        validation?.value,
+                        requiredValidation
+                    )
                 );
             } else if (validationType === 'submit') {
                 updateInputValidity(true);
@@ -174,10 +195,23 @@ export function useForm(
         debouncedUpdateInputValidity.cancel();
     });
     function forceValidateField() {
+        console.log('🔄 [forceValidateField] Force validating field:', _fieldName.value);
         debouncedUpdateInputValidity.cancel();
-        const isValid = computeValidation(value.value, required?.value, customValidation?.value, validation?.value, requiredValidation);
+        const isValid = computeValidation(
+            value.value,
+            required?.value,
+            customValidation?.value,
+            validation?.value,
+            requiredValidation
+        );
         updateInputValidity(isValid);
         return isValid;
+    }
+
+    // Expose reset flag for external control
+    function setResettingFlag(flag) {
+        isResetting = flag;
+        console.log('🔄 [useForm] Reset flag set to:', flag, 'for field:', _fieldName.value);
     }
 
     watch(
@@ -222,6 +256,7 @@ export function useForm(
     return {
         selectForm,
         submitForm,
+        setResettingFlag,
     };
 }
 

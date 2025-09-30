@@ -74,19 +74,37 @@ export default {
 
         const formData = ref({});
         function updateFormData() {
+            console.log('📊 [updateFormData] Starting updateFormData');
+            console.log(
+                '📊 [updateFormData] Current formData before update:',
+                JSON.parse(JSON.stringify(formData.value))
+            );
+            console.log('📊 [updateFormData] Current formInputs:', JSON.parse(JSON.stringify(formInputs.value)));
+
+            const removedKeys = [];
+            const updatedKeys = [];
+
             // Remove keys that don't exist in formInputs
             for (const key of Object.keys(formData.value)) {
                 if (!(key in formInputs.value)) {
+                    console.log('📊 [updateFormData] Removing key that no longer exists in formInputs:', key);
                     delete formData.value[key];
+                    removedKeys.push(key);
                 }
             }
 
             // Update values for existing keys
             for (const [key, { value }] of Object.entries(formInputs.value)) {
                 if (!isEqual(formData.value[key], value)) {
+                    console.log('📊 [updateFormData] Updating key:', key, 'from:', formData.value[key], 'to:', value);
                     formData.value[key] = value;
+                    updatedKeys.push(key);
                 }
             }
+
+            console.log('📊 [updateFormData] Removed keys:', removedKeys);
+            console.log('📊 [updateFormData] Updated keys:', updatedKeys);
+            console.log('📊 [updateFormData] Final formData:', JSON.parse(JSON.stringify(formData.value)));
         }
         watch(
             formInputs,
@@ -112,11 +130,67 @@ export default {
         function _setFormState(isSubmitting, isSubmitted) {
             setFormState({ isSubmitting: !!isSubmitting, isSubmitted: !!isSubmitted });
         }
-        
+
         function resetForm(initialValues = {}) {
-            resetInputs(initialValues);
-            setFormState({ isSubmitting: false, isSubmitted: false });
-            updateFormData();
+            console.log('🔄 [resetForm] ===== STARTING FORM RESET =====');
+            console.log('🔄 [resetForm] Initial values provided:', initialValues);
+            console.log('🔄 [resetForm] Current formData before reset:', JSON.parse(JSON.stringify(formData.value)));
+            console.log(
+                '🔄 [resetForm] Current formInputs before reset:',
+                JSON.parse(JSON.stringify(formInputs.value))
+            );
+            console.log('🔄 [resetForm] Current formState before reset:', {
+                isSubmitting: formState.isSubmitting.value,
+                isSubmitted: formState.isSubmitted.value,
+                isValid: formState.isValid.value,
+            });
+
+            try {
+                // STEP 1: Reset all input values and validation states
+                console.log('🔄 [resetForm] STEP 1: Resetting inputs...');
+                resetInputs(initialValues);
+                console.log(
+                    '🔄 [resetForm] After resetInputs - formInputs:',
+                    JSON.parse(JSON.stringify(formInputs.value))
+                );
+
+                // STEP 2: Reset form state to clean initial state
+                console.log('🔄 [resetForm] STEP 2: Resetting form state...');
+                setFormState({ isSubmitting: false, isSubmitted: false });
+                console.log('🔄 [resetForm] After setFormState - formState:', {
+                    isSubmitting: formState.isSubmitting.value,
+                    isSubmitted: formState.isSubmitted.value,
+                    isValid: formState.isValid.value,
+                });
+
+                // STEP 3: Update form data to reflect new values
+                console.log('🔄 [resetForm] STEP 3: Updating form data...');
+                updateFormData();
+                console.log(
+                    '🔄 [resetForm] After updateFormData - formData:',
+                    JSON.parse(JSON.stringify(formData.value))
+                );
+
+                // STEP 4: Final state verification
+                console.log('🔄 [resetForm] STEP 4: Final state verification...');
+                console.log('🔄 [resetForm] Final formState:', {
+                    isSubmitting: formState.isSubmitting.value,
+                    isSubmitted: formState.isSubmitted.value,
+                    isValid: formState.isValid.value,
+                });
+                console.log('🔄 [resetForm] Final formData:', JSON.parse(JSON.stringify(formData.value)));
+                console.log('🔄 [resetForm] Final formInputs:', JSON.parse(JSON.stringify(formInputs.value)));
+
+                console.log('🔄 [resetForm] ===== FORM RESET COMPLETED SUCCESSFULLY =====');
+            } catch (error) {
+                console.error('🔄 [resetForm] ERROR during form reset:', error);
+                console.error('🔄 [resetForm] Current state after error:', {
+                    isSubmitting: formState.isSubmitting.value,
+                    isSubmitted: formState.isSubmitted.value,
+                    isValid: formState.isValid.value,
+                });
+                throw error;
+            }
         }
 
         const { setValue } = wwLib.wwVariable.useComponentVariable({
