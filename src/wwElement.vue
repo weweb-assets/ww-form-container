@@ -112,11 +112,16 @@ export default {
         function _setFormState(isSubmitting, isSubmitted) {
             setFormState({ isSubmitting: !!isSubmitting, isSubmitted: !!isSubmitted });
         }
-        
+
         function resetForm(initialValues = {}) {
             resetInputs(initialValues);
             setFormState({ isSubmitting: false, isSubmitted: false });
             updateFormData();
+
+            // Force validation after reset to prevent stuck null
+            setTimeout(() => {
+                forceValidateAllFields();
+            }, 0);
         }
 
         const { setValue } = wwLib.wwVariable.useComponentVariable({

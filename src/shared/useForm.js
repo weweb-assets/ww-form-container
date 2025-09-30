@@ -99,22 +99,26 @@ export function useForm(
 
     const computeValidation = (value, required, customValidation, validation, requiredValidation) => {
         const validationResult = customValidation && validation ? resolveFormula(validation)?.value : true;
-        
+
         // Use custom required validation if provided, otherwise use default isEmpty check
         const hasValue = requiredValidation ? requiredValidation(value) : !isValueEmpty(value);
 
+        let finalResult;
+
         // If not required, field is valid unless there's custom validation
         if (!required) {
-            return validationResult;
+            finalResult = validationResult;
         }
-
         // If required and has custom validation, both must be true
-        if (customValidation && validation) {
-            return hasValue && validationResult;
+        else if (customValidation && validation) {
+            finalResult = hasValue && validationResult;
+        }
+        // If just required, check for value using custom or default validation
+        else {
+            finalResult = hasValue;
         }
 
-        // If just required, check for value using custom or default validation
-        return hasValue;
+        return finalResult;
     };
 
     function updateInputValidity(isValid) {
@@ -138,15 +142,20 @@ export function useForm(
 
     let isFirst = true;
     const computedValidation = computed(() => {
-        // We have to compute the validation here, otherwise the reactivity will not work
-        const isValid = computeValidation(value.value, required.value, customValidation.value, validation.value, requiredValidation);
+        const isValid = computeValidation(
+            value.value,
+            required.value,
+            customValidation.value,
+            validation.value,
+            requiredValidation
+        );
         if (isFirst) {
             isFirst = false;
             return null;
         }
         return isValid;
     });
-    watch(computedValidation, isValid => {
+    watch(computedValidation, (isValid, oldIsValid) => {
         if (form.validationType.value === 'change') {
             updateFormInput(id, input => {
                 if (!input[_fieldName.value]) {
@@ -160,11 +169,16 @@ export function useForm(
     });
     watch(
         () => form.validationType.value,
-        validationType => {
+        (validationType, oldValidationType) => {
             if (validationType === 'change') {
-                updateInputValidity(
-                    computeValidation(value.value, required?.value, customValidation?.value, validation?.value, requiredValidation)
+                const computedResult = computeValidation(
+                    value.value,
+                    required?.value,
+                    customValidation?.value,
+                    validation?.value,
+                    requiredValidation
                 );
+                updateInputValidity(computedResult);
             } else if (validationType === 'submit') {
                 updateInputValidity(true);
             }
@@ -175,7 +189,13 @@ export function useForm(
     });
     function forceValidateField() {
         debouncedUpdateInputValidity.cancel();
-        const isValid = computeValidation(value.value, required?.value, customValidation?.value, validation?.value, requiredValidation);
+        const isValid = computeValidation(
+            value.value,
+            required?.value,
+            customValidation?.value,
+            validation?.value,
+            requiredValidation
+        );
         updateInputValidity(isValid);
         return isValid;
     }

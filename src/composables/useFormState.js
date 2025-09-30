@@ -10,7 +10,17 @@ export function useFormState() {
         isSubmitted: computed(() => isSubmitted.value),
         isValid: computed(() => {
             const inputsValidity = Object.values(inputValidityMap.value);
-            if (inputsValidity.some(v => v === null)) {
+            if (inputsValidity.length === 0) {
+                return null;
+            }
+
+            const hasNullValidity = inputsValidity.some(v => v === null);
+
+            if (hasNullValidity && inputsValidity.every(v => v === null)) {
+                return true;
+            }
+
+            if (hasNullValidity) {
                 return null;
             }
 

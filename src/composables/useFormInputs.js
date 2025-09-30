@@ -53,56 +53,51 @@ export function useFormInputs({ updateInputValidity, removeInputValidity }) {
     function forceValidateAllFields() {
         const validityMap = {};
         const invalidFields = [];
-        
+
         for (const [id, inputs] of Object.entries(inputsMap.value)) {
             for (const [name, input] of Object.entries(inputs)) {
                 if ('forceValidateField' in input) {
                     const isValid = input.forceValidateField();
                     validityMap[id + name] = isValid;
-                    
+
                     if (!isValid) {
                         invalidFields.push({
                             id: id,
                             name: name,
                             value: input.value,
                             isValid: isValid,
-                            error: input.error || input.validationMessage || 'Validation failed'
+                            error: input.error || input.validationMessage || 'Validation failed',
                         });
                     }
                 }
             }
         }
-        
+
         const isValid = Object.values(validityMap).every(Boolean);
-        
+
         return {
             isValid,
             invalidFields,
-            validityMap
+            validityMap,
         };
     }
 
     function resetInputs(initialValues = {}) {
         initialValues ||= {};
+
         for (const [id, inputs] of Object.entries(inputsMap.value)) {
             for (const [name, input] of Object.entries(inputs)) {
                 if (input && typeof input === 'object') {
                     updateInput(id, input => {
                         if (input[name]) {
-                            // Priority order for values:
-                            // 1. Value from passed initialValues object
-                            // 2. Field's stored initialValue from useForm
-                            // 3. Default empty value based on type
-
+                            // Determine reset value
                             let newValue;
                             if (initialValues[name] !== undefined) {
-                                // Use value from initialValues parameter
                                 newValue = initialValues[name];
                             } else if (input[name].initialValue !== undefined) {
-                                // Use the field's own initialValue that was set during registration
                                 newValue = input[name].initialValue;
                             } else {
-                                // Reset to empty value based on the input type
+                                // Default empty value based on type
                                 if (Array.isArray(input[name].value)) {
                                     newValue = [];
                                 } else if (typeof input[name].value === 'object' && input[name].value !== null) {
@@ -116,7 +111,7 @@ export function useFormInputs({ updateInputValidity, removeInputValidity }) {
                                 }
                             }
 
-                            // Update both the form input's value and the component's reactive value reference
+                            // Update value
                             input[name].value = newValue;
                             if (input[name].updateValue) {
                                 input[name].updateValue(newValue);
