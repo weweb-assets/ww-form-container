@@ -74,37 +74,19 @@ export default {
 
         const formData = ref({});
         function updateFormData() {
-            console.log('📊 [updateFormData] Starting updateFormData');
-            console.log(
-                '📊 [updateFormData] Current formData before update:',
-                JSON.parse(JSON.stringify(formData.value))
-            );
-            console.log('📊 [updateFormData] Current formInputs:', JSON.parse(JSON.stringify(formInputs.value)));
-
-            const removedKeys = [];
-            const updatedKeys = [];
-
             // Remove keys that don't exist in formInputs
             for (const key of Object.keys(formData.value)) {
                 if (!(key in formInputs.value)) {
-                    console.log('📊 [updateFormData] Removing key that no longer exists in formInputs:', key);
                     delete formData.value[key];
-                    removedKeys.push(key);
                 }
             }
 
             // Update values for existing keys
             for (const [key, { value }] of Object.entries(formInputs.value)) {
                 if (!isEqual(formData.value[key], value)) {
-                    console.log('📊 [updateFormData] Updating key:', key, 'from:', formData.value[key], 'to:', value);
                     formData.value[key] = value;
-                    updatedKeys.push(key);
                 }
             }
-
-            console.log('📊 [updateFormData] Removed keys:', removedKeys);
-            console.log('📊 [updateFormData] Updated keys:', updatedKeys);
-            console.log('📊 [updateFormData] Final formData:', JSON.parse(JSON.stringify(formData.value)));
         }
         watch(
             formInputs,
