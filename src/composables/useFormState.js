@@ -14,6 +14,12 @@ export function useFormState() {
             console.log('🔍 [isValid] inputValidityMap:', JSON.parse(JSON.stringify(inputValidityMap.value)));
             console.log('🔍 [isValid] inputsValidity array:', inputsValidity);
 
+            // If no inputs, return null
+            if (inputsValidity.length === 0) {
+                console.log('🔍 [isValid] No inputs found, returning null');
+                return null;
+            }
+
             // Check if any input has null validity (unvalidated)
             const hasNullValidity = inputsValidity.some(v => v === null);
             console.log('🔍 [isValid] Has null validity inputs:', hasNullValidity);
@@ -104,10 +110,27 @@ export function useFormState() {
         console.log('🔄 [removeInputValidity] New form isValid value:', formState.isValid.value);
     };
 
+    // Force trigger validation computation
+    const triggerValidationComputation = () => {
+        console.log('🔄 [triggerValidationComputation] Forcing validation computation...');
+        console.log(
+            '🔄 [triggerValidationComputation] Current inputValidityMap:',
+            JSON.parse(JSON.stringify(inputValidityMap.value))
+        );
+        console.log('🔄 [triggerValidationComputation] Current isValid value:', formState.isValid.value);
+
+        // Force the computed to re-evaluate by accessing it
+        const currentIsValid = formState.isValid.value;
+        console.log('🔄 [triggerValidationComputation] Re-computed isValid value:', currentIsValid);
+
+        return currentIsValid;
+    };
+
     return {
         formState,
         setFormState,
         updateInputValidity,
         removeInputValidity,
+        triggerValidationComputation,
     };
 }

@@ -64,7 +64,8 @@ export default {
             return parsedDelay;
         });
 
-        const { formState, setFormState, updateInputValidity, removeInputValidity } = useFormState();
+        const { formState, setFormState, updateInputValidity, removeInputValidity, triggerValidationComputation } =
+            useFormState();
         const { formInputs, forceValidateAllFields, resetInputs } = useFormInputs({
             updateInputValidity,
             removeInputValidity,
@@ -134,7 +135,6 @@ export default {
         function resetForm(initialValues = {}) {
             console.log('🔄 [resetForm] ===== STARTING FORM RESET =====');
             console.log('🔄 [resetForm] TEST LOG - Can you see this?');
-            alert('RESET FORM CALLED - Check console for logs');
             console.log('🔄 [resetForm] Initial values provided:', initialValues);
             console.log('🔄 [resetForm] Current formData before reset:', JSON.parse(JSON.stringify(formData.value)));
             console.log(
@@ -173,8 +173,18 @@ export default {
                     JSON.parse(JSON.stringify(formData.value))
                 );
 
-                // STEP 4: Final state verification
-                console.log('🔄 [resetForm] STEP 4: Final state verification...');
+                // STEP 4: Force validation of all fields to fix stuck null issue
+                console.log('🔄 [resetForm] STEP 4: Force validating all fields to fix stuck null issue...');
+                const validationResult = forceValidateAllFields();
+                console.log('🔄 [resetForm] Force validation result:', validationResult);
+
+                // STEP 4.5: Trigger validation computation to fix stuck null
+                console.log('🔄 [resetForm] STEP 4.5: Triggering validation computation...');
+                const finalIsValid = triggerValidationComputation();
+                console.log('🔄 [resetForm] Final isValid after trigger:', finalIsValid);
+
+                // STEP 5: Final state verification
+                console.log('🔄 [resetForm] STEP 5: Final state verification...');
                 console.log('🔄 [resetForm] Final formState:', {
                     isSubmitting: formState.isSubmitting.value,
                     isSubmitted: formState.isSubmitted.value,
