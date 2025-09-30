@@ -257,6 +257,29 @@ export function useFormInputs({ updateInputValidity, removeInputValidity }) {
             }
         }
 
+        // STEP 6: Reset validation state for all fields
+        console.log('🔄 [resetInputs] STEP 6: Resetting validation state for all fields');
+        for (const [id, inputs] of Object.entries(inputsMap.value)) {
+            for (const [name, input] of Object.entries(inputs)) {
+                if (input && typeof input === 'object' && input[name] && input[name].resetValidationState) {
+                    console.log('🔄 [resetInputs] Resetting validation state for field:', name, 'for input id:', id);
+                    input[name].resetValidationState();
+                }
+            }
+        }
+
+        // STEP 7: Force validation of all fields to compute proper validation state
+        console.log('🔄 [resetInputs] STEP 7: Force validating all fields to compute proper validation state');
+        for (const [id, inputs] of Object.entries(inputsMap.value)) {
+            for (const [name, input] of Object.entries(inputs)) {
+                if (input && typeof input === 'object' && input[name] && input[name].forceValidateField) {
+                    console.log('🔄 [resetInputs] Force validating field:', name, 'for input id:', id);
+                    const validationResult = input[name].forceValidateField();
+                    console.log('🔄 [resetInputs] Force validation result for field', name, ':', validationResult);
+                }
+            }
+        }
+
         console.log('🔄 [resetInputs] Reset details:', resetDetails);
         console.log('🔄 [resetInputs] Final inputsMap after reset:', JSON.parse(JSON.stringify(inputsMap.value)));
         console.log('🔄 [resetInputs] resetInputs completed successfully');

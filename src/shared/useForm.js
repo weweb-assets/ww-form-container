@@ -82,6 +82,7 @@ export function useForm(
             forceValidateField,
             updateValue,
             setResettingFlag,
+            resetValidationState,
             initialValue: unref(initialValue), // Store the initialValue so it can be used during form reset
         },
     });
@@ -282,6 +283,12 @@ export function useForm(
         console.log('🔄 [useForm] Reset flag set to:', flag, 'for field:', _fieldName.value);
     }
 
+    // Reset the isFirst flag to allow proper validation after reset
+    function resetValidationState() {
+        isFirst = true;
+        console.log('🔄 [useForm] Reset validation state for field:', _fieldName.value);
+    }
+
     watch(
         value,
         (nv, ov) => {
@@ -333,6 +340,7 @@ export function useForm(
         selectForm,
         submitForm,
         setResettingFlag,
+        resetValidationState,
     };
 }
 
