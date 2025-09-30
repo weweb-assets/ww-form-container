@@ -64,8 +64,7 @@ export default {
             return parsedDelay;
         });
 
-        const { formState, setFormState, updateInputValidity, removeInputValidity, triggerValidationComputation } =
-            useFormState();
+        const { formState, setFormState, updateInputValidity, removeInputValidity } = useFormState();
         const { formInputs, forceValidateAllFields, resetInputs } = useFormInputs({
             updateInputValidity,
             removeInputValidity,
@@ -133,95 +132,22 @@ export default {
         }
 
         function resetForm(initialValues = {}) {
-            console.log('🔄 [resetForm] ===== STARTING FORM RESET =====');
-            console.log('🔄 [resetForm] TEST LOG - Can you see this?');
-            console.log('🔄 [resetForm] Initial values provided:', initialValues);
-            console.log('🔄 [resetForm] Current formData before reset:', JSON.parse(JSON.stringify(formData.value)));
-            console.log(
-                '🔄 [resetForm] Current formInputs before reset:',
-                JSON.parse(JSON.stringify(formInputs.value))
-            );
-            console.log('🔄 [resetForm] Current formState before reset:', {
-                isSubmitting: formState.isSubmitting.value,
-                isSubmitted: formState.isSubmitted.value,
-                isValid: formState.isValid.value,
-            });
+            resetInputs(initialValues);
+            setFormState({ isSubmitting: false, isSubmitted: false });
+            updateFormData();
 
-            try {
-                // STEP 1: Reset all input values and validation states
-                console.log('🔄 [resetForm] STEP 1: Resetting inputs...');
-                resetInputs(initialValues);
-                console.log(
-                    '🔄 [resetForm] After resetInputs - formInputs:',
-                    JSON.parse(JSON.stringify(formInputs.value))
-                );
+            // Force validation to prevent stuck null issue
+            forceValidateAllFields();
 
-                // STEP 2: Reset form state to clean initial state
-                console.log('🔄 [resetForm] STEP 2: Resetting form state...');
-                setFormState({ isSubmitting: false, isSubmitted: false });
-                console.log('🔄 [resetForm] After setFormState - formState:', {
-                    isSubmitting: formState.isSubmitting.value,
-                    isSubmitted: formState.isSubmitted.value,
-                    isValid: formState.isValid.value,
-                });
-
-                // STEP 3: Update form data to reflect new values
-                console.log('🔄 [resetForm] STEP 3: Updating form data...');
-                updateFormData();
-                console.log(
-                    '🔄 [resetForm] After updateFormData - formData:',
-                    JSON.parse(JSON.stringify(formData.value))
-                );
-
-                // STEP 4: Force validation of all fields to fix stuck null issue
-                console.log('🔄 [resetForm] STEP 4: Force validating all fields to fix stuck null issue...');
-                const validationResult = forceValidateAllFields();
-                console.log('🔄 [resetForm] Force validation result:', validationResult);
-
-                // STEP 4.5: Trigger validation computation to fix stuck null
-                console.log('🔄 [resetForm] STEP 4.5: Triggering validation computation...');
-                const finalIsValid = triggerValidationComputation();
-                console.log('🔄 [resetForm] Final isValid after trigger:', finalIsValid);
-
-                // STEP 4.6: Force a small delay and re-trigger validation to ensure it's computed
-                console.log('🔄 [resetForm] STEP 4.6: Delayed validation re-trigger...');
-                setTimeout(() => {
-                    console.log('🔄 [resetForm] Delayed validation trigger...');
-                    const delayedIsValid = triggerValidationComputation();
-                    console.log('🔄 [resetForm] Delayed isValid result:', delayedIsValid);
-
-                    // If still null, force set to true to prevent stuck null
-                    if (delayedIsValid === null) {
-                        console.log('🔄 [resetForm] Still null, forcing to true to prevent stuck null');
-                        // Force update all inputs to valid state
-                        for (const [id, inputs] of Object.entries(formInputs.value)) {
-                            updateInputValidity(id, true);
-                        }
-                        const finalForcedIsValid = triggerValidationComputation();
-                        console.log('🔄 [resetForm] Final forced isValid result:', finalForcedIsValid);
+            // Delayed validation trigger to ensure proper state
+            setTimeout(() => {
+                if (formState.isValid.value === null) {
+                    // Force all inputs to valid state if still null
+                    for (const [id, inputs] of Object.entries(formInputs.value)) {
+                        updateInputValidity(id, true);
                     }
-                }, 10);
-
-                // STEP 5: Final state verification
-                console.log('🔄 [resetForm] STEP 5: Final state verification...');
-                console.log('🔄 [resetForm] Final formState:', {
-                    isSubmitting: formState.isSubmitting.value,
-                    isSubmitted: formState.isSubmitted.value,
-                    isValid: formState.isValid.value,
-                });
-                console.log('🔄 [resetForm] Final formData:', JSON.parse(JSON.stringify(formData.value)));
-                console.log('🔄 [resetForm] Final formInputs:', JSON.parse(JSON.stringify(formInputs.value)));
-
-                console.log('🔄 [resetForm] ===== FORM RESET COMPLETED SUCCESSFULLY =====');
-            } catch (error) {
-                console.error('🔄 [resetForm] ERROR during form reset:', error);
-                console.error('🔄 [resetForm] Current state after error:', {
-                    isSubmitting: formState.isSubmitting.value,
-                    isSubmitted: formState.isSubmitted.value,
-                    isValid: formState.isValid.value,
-                });
-                throw error;
-            }
+                }
+            }, 10);
         }
 
         const { setValue } = wwLib.wwVariable.useComponentVariable({
