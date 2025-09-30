@@ -133,6 +133,8 @@ export default {
 
         function resetForm(initialValues = {}) {
             console.log('🔄 [resetForm] ===== STARTING FORM RESET =====');
+            console.log('🔄 [resetForm] TEST LOG - Can you see this?');
+            alert('RESET FORM CALLED - Check console for logs');
             console.log('🔄 [resetForm] Initial values provided:', initialValues);
             console.log('🔄 [resetForm] Current formData before reset:', JSON.parse(JSON.stringify(formData.value)));
             console.log(

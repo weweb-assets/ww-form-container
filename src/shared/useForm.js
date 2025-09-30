@@ -193,6 +193,9 @@ export function useForm(
     let isResetting = false; // Flag to prevent validation during reset
 
     const computedValidation = computed(() => {
+        console.log('🔍 [computedValidation] Computing validation for field:', _fieldName.value);
+        console.log('🔍 [computedValidation] isResetting:', isResetting, 'isFirst:', isFirst);
+
         // Skip validation during reset to prevent interference
         if (isResetting) {
             console.log('🔄 [useForm] Skipping validation during reset for field:', _fieldName.value);
@@ -207,10 +210,16 @@ export function useForm(
             validation.value,
             requiredValidation
         );
+
+        console.log('🔍 [computedValidation] Computed validation result:', isValid);
+
         if (isFirst) {
+            console.log('🔍 [computedValidation] First validation, setting isFirst to false and returning null');
             isFirst = false;
             return null;
         }
+
+        console.log('🔍 [computedValidation] Returning validation result:', isValid);
         return isValid;
     });
     watch(computedValidation, (isValid, oldIsValid) => {
@@ -285,8 +294,18 @@ export function useForm(
 
     // Reset the isFirst flag to allow proper validation after reset
     function resetValidationState() {
+        console.log('🔄 [useForm] Resetting validation state for field:', _fieldName.value);
+        console.log('🔄 [useForm] Before reset - isFirst:', isFirst, 'isResetting:', isResetting);
         isFirst = true;
-        console.log('🔄 [useForm] Reset validation state for field:', _fieldName.value);
+        isResetting = false; // Also clear the resetting flag
+        console.log('🔄 [useForm] After reset - isFirst:', isFirst, 'isResetting:', isResetting);
+
+        // Force a re-computation by triggering the computed validation
+        console.log('🔄 [useForm] Triggering validation re-computation for field:', _fieldName.value);
+        const currentValidation = computedValidation.value;
+        console.log('🔄 [useForm] Current validation result after reset:', currentValidation);
+
+        console.log('🔄 [useForm] Validation state reset completed for field:', _fieldName.value);
     }
 
     watch(

@@ -259,11 +259,38 @@ export function useFormInputs({ updateInputValidity, removeInputValidity }) {
 
         // STEP 6: Reset validation state for all fields
         console.log('🔄 [resetInputs] STEP 6: Resetting validation state for all fields');
+        console.log(
+            '🔄 [resetInputs] Current inputsMap for validation reset:',
+            JSON.parse(JSON.stringify(inputsMap.value))
+        );
+
         for (const [id, inputs] of Object.entries(inputsMap.value)) {
+            console.log('🔄 [resetInputs] Processing input id for validation reset:', id);
             for (const [name, input] of Object.entries(inputs)) {
-                if (input && typeof input === 'object' && input[name] && input[name].resetValidationState) {
-                    console.log('🔄 [resetInputs] Resetting validation state for field:', name, 'for input id:', id);
-                    input[name].resetValidationState();
+                console.log('🔄 [resetInputs] Processing field for validation reset:', name);
+                console.log('🔄 [resetInputs] Input object:', JSON.parse(JSON.stringify(input)));
+
+                if (input && typeof input === 'object' && input[name]) {
+                    console.log('🔄 [resetInputs] Field object:', JSON.parse(JSON.stringify(input[name])));
+                    console.log(
+                        '🔄 [resetInputs] Has resetValidationState function:',
+                        !!input[name].resetValidationState
+                    );
+
+                    if (input[name].resetValidationState) {
+                        console.log(
+                            '🔄 [resetInputs] Resetting validation state for field:',
+                            name,
+                            'for input id:',
+                            id
+                        );
+                        input[name].resetValidationState();
+                        console.log('🔄 [resetInputs] Validation state reset completed for field:', name);
+                    } else {
+                        console.log('🔄 [resetInputs] No resetValidationState function found for field:', name);
+                    }
+                } else {
+                    console.log('🔄 [resetInputs] Invalid input structure for field:', name);
                 }
             }
         }
