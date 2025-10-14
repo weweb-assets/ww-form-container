@@ -91,10 +91,13 @@ export function useFormInputs({ updateInputValidity, removeInputValidity }) {
                 if (input && typeof input === 'object') {
                     updateInput(id, input => {
                         if (input[name]) {
-                            // Determine reset value
+                            // Determine reset value and whether it's a forced value
                             let newValue;
+                            let isForcedValue = false;
+
                             if (initialValues[name] !== undefined) {
                                 newValue = initialValues[name];
+                                isForcedValue = true;
                             } else if (input[name].initialValue !== undefined) {
                                 newValue = input[name].initialValue;
                             } else {
@@ -118,18 +121,23 @@ export function useFormInputs({ updateInputValidity, removeInputValidity }) {
                                 input[name].updateValue(newValue);
                             }
 
-                            // Reset validation state to initial state AFTER value update
-                            // This ensures we overwrite any validation triggered by the value change
-                            input[name].isValid = input[name].initialIsValid ?? null;
-                            input[name].pending = false;
+                            // If this is a forced value, allow validation to run
+                            // Otherwise, reset to initial validation state
+                            if (!isForcedValue) {
+                                // Reset validation state to initial state AFTER value update
+                                // This ensures we overwrite any validation triggered by the value change
+                                input[name].isValid = input[name].initialIsValid ?? null;
+                                input[name].pending = false;
 
-                            // Cancel any pending validation in the next tick
-                            // This ensures we cancel validations that were queued by watchers during this tick
-                            setTimeout(() => {
-                                if (input[name]?.cancelValidation) {
-                                    input[name].cancelValidation();
-                                }
-                            }, 0);
+                                // Cancel any pending validation in the next tick
+                                // This ensures we cancel validations that were queued by watchers during this tick
+                                setTimeout(() => {
+                                    if (input[name]?.cancelValidation) {
+                                        input[name].cancelValidation();
+                                    }
+                                }, 0);
+                            }
+                            // For forced values, let the validation watcher run naturally
                         }
                     });
 
