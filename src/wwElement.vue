@@ -117,11 +117,6 @@ export default {
             resetInputs(initialValues);
             setFormState({ isSubmitting: false, isSubmitted: false });
             updateFormData();
-
-            // Force validation after reset to prevent stuck null
-            setTimeout(() => {
-                forceValidateAllFields();
-            }, 0);
         }
 
         const { setValue } = wwLib.wwVariable.useComponentVariable({

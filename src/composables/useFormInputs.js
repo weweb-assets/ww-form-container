@@ -12,7 +12,7 @@ export function useFormInputs({ updateInputValidity, removeInputValidity }) {
                 .filter(([key, value]) => key !== 'null' && value !== null)
                 .map(([key, value]) => [
                     key,
-                    omit(value, ['forceValidateField', 'updateValue', 'pending', 'initialValue']),
+                    omit(value, ['forceValidateField', 'updateValue', 'cancelValidation', 'pending', 'initialValue', 'initialIsValid']),
                 ])
         );
     });
@@ -27,7 +27,8 @@ export function useFormInputs({ updateInputValidity, removeInputValidity }) {
         const input = inputsMap.value[id];
         if (!input) return;
         updateFn(input);
-        updateInputValidity(id, Object.values(inputsMap.value[id])?.[0]?.isValid ?? null);
+        const newIsValid = Object.values(inputsMap.value[id])?.[0]?.isValid ?? null;
+        updateInputValidity(id, newIsValid);
     }
 
     function unregisterInput(id) {
@@ -117,11 +118,22 @@ export function useFormInputs({ updateInputValidity, removeInputValidity }) {
                                 input[name].updateValue(newValue);
                             }
 
-                            // Reset validation state
-                            input[name].isValid = null;
+                            // Reset validation state to initial state AFTER value update
+                            // This ensures we overwrite any validation triggered by the value change
+                            input[name].isValid = input[name].initialIsValid ?? null;
                             input[name].pending = false;
+
+                            // Cancel any pending validation in the next tick
+                            // This ensures we cancel validations that were queued by watchers during this tick
+                            setTimeout(() => {
+                                if (input[name]?.cancelValidation) {
+                                    input[name].cancelValidation();
+                                }
+                            }, 0);
                         }
                     });
+
+                    // Note: updateInput already calls updateInputValidity, so we don't need to call it again here
                 }
             }
         }

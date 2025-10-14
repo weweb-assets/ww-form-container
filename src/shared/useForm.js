@@ -74,14 +74,23 @@ export function useForm(
         }
     }
 
+    const initialIsValid = !required.value && !customValidation.value ? true : null;
+    const initialValueRef = unref(initialValue) !== undefined ? unref(initialValue) : value.value;
+
+    function cancelValidation() {
+        debouncedUpdateInputValidity.cancel();
+    }
+
     registerFormInput(id, {
         [_fieldName.value]: {
             value: value.value,
-            isValid: !required.value && !customValidation.value ? true : null,
+            isValid: initialIsValid,
             pending: false,
             forceValidateField,
             updateValue,
+            cancelValidation, // Allow canceling pending validations during reset
             initialValue: unref(initialValue), // Store the initialValue so it can be used during form reset
+            initialIsValid, // Store the initial isValid state for reset
         },
     });
 
@@ -141,6 +150,7 @@ export function useForm(
     );
 
     let isFirst = true;
+    let hasSetInitialIsValid = false;
     const computedValidation = computed(() => {
         const isValid = computeValidation(
             value.value,
@@ -165,6 +175,23 @@ export function useForm(
                 input[_fieldName.value].pending = true;
             });
             debouncedUpdateInputValidity(isValid);
+
+            // Capture the initial isValid state after the first validation completes
+            // This ensures reset returns to the correct initial state
+            // Only capture for fields that have validation (required or custom) AND
+            // only when the value hasn't changed from initial (this is the initial mount validation)
+            const currentValue = value.value;
+            const isStillInitialValue = isEqual(currentValue, initialValueRef);
+            if (!hasSetInitialIsValid && oldIsValid === null && (required.value || customValidation.value) && isStillInitialValue) {
+                hasSetInitialIsValid = true;
+                setTimeout(() => {
+                    updateFormInput(id, input => {
+                        if (input[_fieldName.value]) {
+                            input[_fieldName.value].initialIsValid = input[_fieldName.value].isValid;
+                        }
+                    });
+                }, form.debounceDelay.value + 10);
+            }
         }
     });
     watch(
