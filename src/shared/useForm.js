@@ -180,7 +180,7 @@ export function useForm(
                 );
                 updateInputValidity(computedResult);
             } else if (validationType === 'submit') {
-                updateInputValidity(true);
+                updateInputValidity(null);
             }
         }
     );

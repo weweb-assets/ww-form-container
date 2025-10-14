@@ -16,14 +16,12 @@ export function useFormState() {
 
             const hasNullValidity = inputsValidity.some(v => v === null);
 
-            if (hasNullValidity && inputsValidity.every(v => v === null)) {
-                return true;
-            }
-
+            // If any input has null validity, the form validity is null (not yet validated)
             if (hasNullValidity) {
                 return null;
             }
 
+            // If all inputs are validated (true/false), check if all are valid
             return !inputsValidity.some(isValid => !isValid);
         }),
     });
