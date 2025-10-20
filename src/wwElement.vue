@@ -68,6 +68,7 @@ export default {
         const { formInputs, forceValidateAllFields, resetInputs } = useFormInputs({
             updateInputValidity,
             removeInputValidity,
+            validationType,
         });
 
         const isValid = computed(() => formState.isValid.value);

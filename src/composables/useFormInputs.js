@@ -1,8 +1,7 @@
 import { omit } from 'lodash-es';
-import { computed, watch, provide, ref, inject } from 'vue';
+import { computed, watch, provide, ref } from 'vue';
 
-export function useFormInputs({ updateInputValidity, removeInputValidity }) {
-    const form = inject('_wwForm:info', null);
+export function useFormInputs({ updateInputValidity, removeInputValidity, validationType }) {
     const inputsMap = ref({});
 
     const formInputs = computed(() => {
@@ -124,7 +123,7 @@ export function useFormInputs({ updateInputValidity, removeInputValidity }) {
 
                             // In submit mode, never trigger validation on reset (even for forced values)
                             // In change mode, allow validation for forced values only
-                            const isSubmitMode = form?.validationType?.value === 'submit';
+                            const isSubmitMode = validationType?.value === 'submit';
                             const shouldResetValidation = isSubmitMode || !isForcedValue;
 
                             if (shouldResetValidation) {
