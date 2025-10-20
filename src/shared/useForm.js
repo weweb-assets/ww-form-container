@@ -224,6 +224,10 @@ export function useForm(
             requiredValidation
         );
         updateInputValidity(isValid);
+
+        // Don't capture initialIsValid for submit mode - it should always stay null
+        // Only capture for onChange mode (which happens in the watch of computedValidation)
+
         return isValid;
     }
 
