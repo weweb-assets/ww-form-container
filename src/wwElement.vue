@@ -68,6 +68,7 @@ export default {
         const { formInputs, forceValidateAllFields, resetInputs } = useFormInputs({
             updateInputValidity,
             removeInputValidity,
+            validationType,
         });
 
         const isValid = computed(() => formState.isValid.value);
@@ -112,7 +113,7 @@ export default {
         function _setFormState(isSubmitting, isSubmitted) {
             setFormState({ isSubmitting: !!isSubmitting, isSubmitted: !!isSubmitted });
         }
-        
+
         function resetForm(initialValues = {}) {
             resetInputs(initialValues);
             setFormState({ isSubmitting: false, isSubmitted: false });

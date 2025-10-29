@@ -1,7 +1,7 @@
 import { omit } from 'lodash-es';
 import { computed, watch, provide, ref } from 'vue';
 
-export function useFormInputs({ updateInputValidity, removeInputValidity }) {
+export function useFormInputs({ updateInputValidity, removeInputValidity, validationType }) {
     const inputsMap = ref({});
 
     const formInputs = computed(() => {
@@ -12,7 +12,7 @@ export function useFormInputs({ updateInputValidity, removeInputValidity }) {
                 .filter(([key, value]) => key !== 'null' && value !== null)
                 .map(([key, value]) => [
                     key,
-                    omit(value, ['forceValidateField', 'updateValue', 'pending', 'initialValue']),
+                    omit(value, ['forceValidateField', 'updateValue', 'cancelValidation', 'pending', 'initialValue', 'initialIsValid']),
                 ])
         );
     });
@@ -27,7 +27,8 @@ export function useFormInputs({ updateInputValidity, removeInputValidity }) {
         const input = inputsMap.value[id];
         if (!input) return;
         updateFn(input);
-        updateInputValidity(id, Object.values(inputsMap.value[id])?.[0]?.isValid ?? null);
+        const newIsValid = Object.values(inputsMap.value[id])?.[0]?.isValid ?? null;
+        updateInputValidity(id, newIsValid);
     }
 
     function unregisterInput(id) {
@@ -53,56 +54,54 @@ export function useFormInputs({ updateInputValidity, removeInputValidity }) {
     function forceValidateAllFields() {
         const validityMap = {};
         const invalidFields = [];
-        
+
         for (const [id, inputs] of Object.entries(inputsMap.value)) {
             for (const [name, input] of Object.entries(inputs)) {
                 if ('forceValidateField' in input) {
                     const isValid = input.forceValidateField();
                     validityMap[id + name] = isValid;
-                    
+
                     if (!isValid) {
                         invalidFields.push({
                             id: id,
                             name: name,
                             value: input.value,
                             isValid: isValid,
-                            error: input.error || input.validationMessage || 'Validation failed'
+                            error: input.error || input.validationMessage || 'Validation failed',
                         });
                     }
                 }
             }
         }
-        
+
         const isValid = Object.values(validityMap).every(Boolean);
-        
+
         return {
             isValid,
             invalidFields,
-            validityMap
+            validityMap,
         };
     }
 
     function resetInputs(initialValues = {}) {
         initialValues ||= {};
+
         for (const [id, inputs] of Object.entries(inputsMap.value)) {
             for (const [name, input] of Object.entries(inputs)) {
                 if (input && typeof input === 'object') {
                     updateInput(id, input => {
                         if (input[name]) {
-                            // Priority order for values:
-                            // 1. Value from passed initialValues object
-                            // 2. Field's stored initialValue from useForm
-                            // 3. Default empty value based on type
-
+                            // Determine reset value and whether it's a forced value
                             let newValue;
+                            let isForcedValue = false;
+
                             if (initialValues[name] !== undefined) {
-                                // Use value from initialValues parameter
                                 newValue = initialValues[name];
+                                isForcedValue = true;
                             } else if (input[name].initialValue !== undefined) {
-                                // Use the field's own initialValue that was set during registration
                                 newValue = input[name].initialValue;
                             } else {
-                                // Reset to empty value based on the input type
+                                // Default empty value based on type
                                 if (Array.isArray(input[name].value)) {
                                     newValue = [];
                                 } else if (typeof input[name].value === 'object' && input[name].value !== null) {
@@ -116,17 +115,36 @@ export function useFormInputs({ updateInputValidity, removeInputValidity }) {
                                 }
                             }
 
-                            // Update both the form input's value and the component's reactive value reference
+                            // Update value
                             input[name].value = newValue;
                             if (input[name].updateValue) {
                                 input[name].updateValue(newValue);
                             }
 
-                            // Reset validation state
-                            input[name].isValid = null;
-                            input[name].pending = false;
+                            // In submit mode, never trigger validation on reset (even for forced values)
+                            // In change mode, allow validation for forced values only
+                            const isSubmitMode = validationType?.value === 'submit';
+                            const shouldResetValidation = isSubmitMode || !isForcedValue;
+
+                            if (shouldResetValidation) {
+                                // Reset validation state to initial state AFTER value update
+                                // This ensures we overwrite any validation triggered by the value change
+                                input[name].isValid = input[name].initialIsValid ?? null;
+                                input[name].pending = false;
+
+                                // Cancel any pending validation in the next tick
+                                // This ensures we cancel validations that were queued by watchers during this tick
+                                setTimeout(() => {
+                                    if (input[name]?.cancelValidation) {
+                                        input[name].cancelValidation();
+                                    }
+                                }, 0);
+                            }
+                            // For forced values in change mode, let the validation watcher run naturally
                         }
                     });
+
+                    // Note: updateInput already calls updateInputValidity, so we don't need to call it again here
                 }
             }
         }
