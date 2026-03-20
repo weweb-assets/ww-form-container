@@ -77,6 +77,7 @@ export default {
                 en: 'On submit',
             },
             default: true,
+            description: "Run when the form is submitted.",
         },
         {
             name: 'submit-validation-error',
@@ -84,6 +85,7 @@ export default {
                 en: 'On submit validation error',
             },
             default: true,
+            description: "Run when form validation fails on submit.",
         },
     ],
     properties: {
