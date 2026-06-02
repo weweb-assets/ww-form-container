@@ -107,12 +107,6 @@
             "type": "object",
             "readonly": true,
             "content": {
-                "fields": {
-                    "fieldName": {
-                        "isValid": "boolean",
-                        "value": "any"
-                    }
-                },
                 "isSubmitting": "boolean",
                 "isSubmitted": "boolean",
                 "isValid": "boolean"
