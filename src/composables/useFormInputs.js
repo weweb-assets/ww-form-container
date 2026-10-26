@@ -12,7 +12,14 @@ export function useFormInputs({ updateInputValidity, removeInputValidity, valida
                 .filter(([key, value]) => key !== 'null' && value !== null)
                 .map(([key, value]) => [
                     key,
-                    omit(value, ['forceValidateField', 'updateValue', 'cancelValidation', 'pending', 'initialValue', 'initialIsValid']),
+                    omit(value, [
+                        'forceValidateField',
+                        'updateValue',
+                        'cancelValidation',
+                        'pending',
+                        'initialValue',
+                        'initialIsValid',
+                    ]),
                 ])
         );
     });
@@ -34,6 +41,43 @@ export function useFormInputs({ updateInputValidity, removeInputValidity, valida
     function unregisterInput(id) {
         delete inputsMap.value[id];
         removeInputValidity(id);
+    }
+
+    function setFormData(values) {
+        if (
+            values === null ||
+            typeof values !== 'object' ||
+            Array.isArray(values) ||
+            ![Object.prototype, null].includes(Object.getPrototypeOf(values))
+        ) {
+            throw new TypeError('Form data must be a plain object.');
+        }
+
+        const entries = Object.entries(values);
+        for (const [name] of entries) {
+            if (['__proto__', 'constructor', 'prototype'].includes(name)) {
+                throw new TypeError(`Invalid form field name: ${name}`);
+            }
+        }
+
+        for (const [name, value] of entries) {
+            let registered = false;
+            for (const [id, input] of Object.entries(inputsMap.value)) {
+                if (!Object.hasOwn(input, name)) continue;
+                registered = true;
+                updateInput(id, fields => {
+                    fields[name].value = value;
+                    fields[name].updateValue?.(value);
+                });
+            }
+            if (registered) continue;
+
+            // Custom inputs have no native registration. Keep their values in the
+            // same registry so synchronization, submission and reset retain them.
+            registerInput(`form-data:${name}`, {
+                [name]: { value, isValid: true, initialIsValid: true },
+            });
+        }
     }
 
     watch(
@@ -154,6 +198,7 @@ export function useFormInputs({ updateInputValidity, removeInputValidity, valida
         inputsMap,
         formInputs,
         updateInput,
+        setFormData,
         forceValidateAllFields,
         resetInputs,
     };
