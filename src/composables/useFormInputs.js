@@ -1,4 +1,4 @@
-import { omit } from 'lodash-es';
+import { isPlainObject, omit } from 'lodash-es';
 import { computed, watch, provide, ref } from 'vue';
 
 export function useFormInputs({ updateInputValidity, removeInputValidity, validationType }) {
@@ -26,7 +26,16 @@ export function useFormInputs({ updateInputValidity, removeInputValidity, valida
 
     function registerInput(id, input) {
         inputsMap.value[id] = input;
-        const [, value] = Object.entries(input)[0];
+        const [name, value] = Object.entries(input)[0];
+        const pendingId = `form-data:${name}`;
+        const pending = inputsMap.value[pendingId];
+        if (id !== pendingId && pending) {
+            // A prefill can run before a native input mounts. Transfer ownership
+            // rather than retaining a shadow value that could reappear on unmount.
+            value.value = pending[name].value;
+            value.updateValue?.(value.value);
+            unregisterInput(pendingId);
+        }
         updateInputValidity(id, value.isValid ?? null);
     }
 
@@ -44,12 +53,7 @@ export function useFormInputs({ updateInputValidity, removeInputValidity, valida
     }
 
     function setFormData(values) {
-        if (
-            values === null ||
-            typeof values !== 'object' ||
-            Array.isArray(values) ||
-            ![Object.prototype, null].includes(Object.getPrototypeOf(values))
-        ) {
+        if (!isPlainObject(values)) {
             throw new TypeError('Form data must be a plain object.');
         }
 

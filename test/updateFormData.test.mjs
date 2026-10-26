@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { afterEach, mock, test } from 'node:test';
-import { createRenderer, h, inject, nextTick, ref, watch } from 'vue';
+import { runInNewContext } from 'node:vm';
+import { createRenderer, h, inject, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import { useFormInputs } from '../src/composables/useFormInputs.js';
 
 const applications = [];
@@ -8,8 +9,9 @@ afterEach(() => {
     for (const application of applications.splice(0)) application.unmount();
 });
 
-function formFixture() {
+function formFixture({ mounted = true } = {}) {
     let inputs;
+    const showNative = ref(mounted);
     const nativeValue = ref('initial@example.com');
     const updateNativeValue = mock.fn(value => {
         nativeValue.value = value;
@@ -18,6 +20,7 @@ function formFixture() {
         setup() {
             const register = inject('_wwForm:registerInput');
             const update = inject('_wwForm:updateInput');
+            const unregister = inject('_wwForm:unregisterInput');
             register('native-email', {
                 email: {
                     value: nativeValue.value,
@@ -33,6 +36,7 @@ function formFixture() {
                     input.email.value = value;
                 })
             );
+            onBeforeUnmount(() => unregister('native-email'));
             return () => h('input');
         },
     };
@@ -55,12 +59,12 @@ function formFixture() {
                 removeInputValidity() {},
                 validationType: ref('submit'),
             });
-            return () => h(nativeInput);
+            return () => (showNative.value ? h(nativeInput) : null);
         },
     });
     application.mount({});
     applications.push(application);
-    return { inputs, nativeValue, updateNativeValue };
+    return { inputs, nativeValue, updateNativeValue, showNative };
 }
 
 test('custom values remain in the form registry when a native field changes', async () => {
@@ -114,10 +118,40 @@ test('reset handles custom fields and restores registered input initial values',
 test('invalid action input is rejected before changing the form', () => {
     const { inputs } = formFixture();
     assert.equal(typeof inputs.setFormData, 'function');
-    for (const value of [null, undefined, 'text', 12, [], new Date()]) {
+    for (const value of [null, undefined, 'text', 12, [], new Date(), new (class Custom {})()]) {
         assert.throws(() => inputs.setFormData(value), TypeError);
     }
     assert.deepEqual(Object.keys(inputs.formInputs.value), ['email']);
+});
+
+test('plain objects from another window realm and null-prototype objects are accepted', () => {
+    const { inputs } = formFixture();
+    inputs.setFormData(runInNewContext('({ customDate: "2026-11-10", count: 0, enabled: false })'));
+    inputs.setFormData(Object.assign(Object.create(null), { optional: null }));
+    assert.equal(inputs.formInputs.value.customDate.value, '2026-11-10');
+    assert.equal(inputs.formInputs.value.count.value, 0);
+    assert.equal(inputs.formInputs.value.enabled.value, false);
+    assert.equal(inputs.formInputs.value.optional.value, null);
+});
+
+test('a native input takes ownership of a prefill when it mounts, without a stale shadow on unmount', async () => {
+    const { inputs, nativeValue, showNative } = formFixture({ mounted: false });
+    inputs.setFormData({ email: 'prefilled@example.com' });
+    assert.ok(inputs.inputsMap.value['form-data:email']);
+
+    showNative.value = true;
+    await nextTick();
+    assert.equal(nativeValue.value, 'prefilled@example.com');
+    assert.equal(inputs.formInputs.value.email.value, 'prefilled@example.com');
+    assert.equal(inputs.inputsMap.value['form-data:email'], undefined);
+    assert.equal(inputs.forceValidateAllFields().isValid, true);
+
+    inputs.resetInputs();
+    await nextTick();
+    assert.equal(nativeValue.value, 'initial@example.com');
+    showNative.value = false;
+    await nextTick();
+    assert.equal(inputs.formInputs.value.email, undefined);
 });
 
 test('unsafe property names are rejected before any field is applied', () => {

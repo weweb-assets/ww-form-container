@@ -27,4 +27,15 @@ values supplied to **Reset form**. A custom input still owns its UI and validati
 not add a validator or a value setter to that component. The action requires a plain object and
 rejects the reserved property names `__proto__`, `constructor` and `prototype`.
 
+Custom fields are stored on the form independently of the custom input's visibility or lifetime.
+Hiding or removing an unregistered custom input does not remove its field from submission.
+Update that field to an empty value or `null` when your workflow needs to clear it; this merge
+action does not remove keys. The custom input should read its displayed value from `formData`,
+or reset its own displayed value in the same workflow as **Reset form**.
+
+If a native input mounts after a value was added under the same field name, it receives that
+prefill through its value setter and takes ownership of the field. The temporary custom entry
+is removed, so unmounting that native input cannot restore an obsolete value. Its normal initial
+value and validation still control reset and submission.
+
 Run the regression tests with `npm test`.

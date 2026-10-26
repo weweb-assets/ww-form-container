@@ -53,7 +53,7 @@
         {
             "label": "Update form data",
             "actionName": "updateFormData",
-            "description": "Merge field values into the form, including values from custom inputs. Existing native inputs are updated and keep their validation. Custom fields remain available in formData and submission and participate in reset.",
+            "description": "Merge field values into the form, including values from custom inputs. Existing native inputs are updated and keep their validation. Custom fields remain in formData and submission until the form unmounts, even if their custom input is hidden. Clear them with an empty value or null; reset the custom input UI in the same workflow as Reset form. A native input mounted later takes ownership of a matching prefill.",
             "args": [
                 {
                     "name": "formData",
