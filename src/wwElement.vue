@@ -65,7 +65,7 @@ export default {
         });
 
         const { formState, setFormState, updateInputValidity, removeInputValidity } = useFormState();
-        const { formInputs, forceValidateAllFields, resetInputs } = useFormInputs({
+        const { formInputs, forceValidateAllFields, resetInputs, setFormData } = useFormInputs({
             updateInputValidity,
             removeInputValidity,
             validationType,
@@ -74,10 +74,10 @@ export default {
         const isValid = computed(() => formState.isValid.value);
 
         const formData = ref({});
-        function updateFormData() {
+        function syncFormData() {
             // Remove keys that don't exist in formInputs
             for (const key of Object.keys(formData.value)) {
-                if (!(key in formInputs.value)) {
+                if (!Object.hasOwn(formInputs.value, key)) {
                     delete formData.value[key];
                 }
             }
@@ -92,7 +92,7 @@ export default {
         watch(
             formInputs,
             v => {
-                updateFormData(v);
+                syncFormData(v);
             },
             {
                 deep: true,
@@ -104,7 +104,7 @@ export default {
             formState: { value: formState, setFormState },
             emit,
             isValid,
-            updateFormData,
+            updateFormData: syncFormData,
             validationType,
             formInputs,
             formName,
@@ -117,7 +117,12 @@ export default {
         function resetForm(initialValues = {}) {
             resetInputs(initialValues);
             setFormState({ isSubmitting: false, isSubmitted: false });
-            updateFormData();
+            syncFormData();
+        }
+
+        function updateFormData(values) {
+            setFormData(values);
+            syncFormData();
         }
 
         const { setValue } = wwLib.wwVariable.useComponentVariable({
@@ -136,6 +141,20 @@ export default {
         }));
 
         const methods = {
+            updateFormData: {
+                method: updateFormData,
+                editor: {
+                    label: 'Update form data',
+                    elementName: 'Form',
+                    description: 'Merge field values into the form, including values from custom inputs.',
+                    args: [
+                        {
+                            name: 'formData',
+                            type: 'object',
+                        },
+                    ],
+                },
+            },
             setFormState: {
                 method: _setFormState,
                 editor: {
@@ -219,6 +238,7 @@ Object containing all form inputs. Each input contains:
             formState,
             _setFormState,
             resetForm,
+            updateFormData,
         };
     },
 };
