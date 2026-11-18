@@ -127,6 +127,7 @@
         "ww-input-toggle",
         "ww-input-range",
         "ww-input-radio",
+        "ww-input-mask",
         "ww-button"
     ]
 }
